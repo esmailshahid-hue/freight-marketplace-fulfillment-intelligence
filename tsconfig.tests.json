@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": { "types": ["node", "vitest/globals"], "strict": true },
+  "include": ["src/analytics", "src/data", "src/utils", "scripts", "tests"]
+}

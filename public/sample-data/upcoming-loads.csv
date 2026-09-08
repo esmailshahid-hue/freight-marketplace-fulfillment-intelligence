@@ -1,0 +1,15 @@
+load_id,customer,business_unit,origin,destination,lane,equipment_type,pickup_datetime,sell_rate,planned_buy_rate,priority,load_count,currency
+U0-0,Synthetic Customer 1,Ports,Jeddah Islamic Port,Riyadh,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07T20:00:00+03:00,1400,900,High,9,SAR
+U0-2,Synthetic Customer 1,Ports,Jeddah Islamic Port,Riyadh,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09T20:00:00+03:00,1400,900,High,9,SAR
+U0-4,Synthetic Customer 1,Ports,Jeddah Islamic Port,Riyadh,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11T20:00:00+03:00,1400,900,High,9,SAR
+U1-2,Synthetic Customer 2,Projects,Jubail,Tabuk,Jubail → Tabuk,Lowbed,2026-09-09T20:00:00+03:00,4000,1000,Critical,12,SAR
+U2-3,Synthetic Customer 3,Domestic,Dammam,Riyadh,Dammam → Riyadh,Reefer,2026-09-10T20:00:00+03:00,1050,900,Standard,12,SAR
+U3-4,Synthetic Customer 4,Domestic,Riyadh,Jeddah,Riyadh → Jeddah,Dry Van,2026-09-11T20:00:00+03:00,1400,1000,Standard,10,SAR
+U4-5,Synthetic Customer 5,Domestic,Jeddah,Jubail,Jeddah → Jubail,Flatbed,2026-09-12T20:00:00+03:00,1400,1000,Standard,10,SAR
+U5-6,Synthetic Customer 6,Domestic,Riyadh,Dammam,Riyadh → Dammam,Dry Van,2026-09-13T20:00:00+03:00,1400,1000,Standard,12,SAR
+U6-1,Synthetic Customer 7,Domestic,Jeddah,Dammam,Jeddah → Dammam,Reefer,2026-09-08T20:00:00+03:00,1400,1000,Standard,12,SAR
+U7-2,Synthetic Customer 1,Domestic,Dammam,Jubail,Dammam → Jubail,Tanker,2026-09-09T20:00:00+03:00,1400,1000,Standard,12,SAR
+U8-3,Synthetic Customer 2,Projects,Jubail,Riyadh,Jubail → Riyadh,Flatbed,2026-09-10T20:00:00+03:00,1400,1000,Standard,12,SAR
+U9-4,Synthetic Customer 3,Cross-Border,Riyadh,Generic Border Hub,Riyadh → Generic Border Hub,Dry Van,2026-09-11T20:00:00+03:00,1400,1000,Standard,12,SAR
+U10-5,Synthetic Customer 4,Ports,Jeddah Islamic Port,Jubail,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12T20:00:00+03:00,1400,1000,Standard,12,SAR
+U11-6,Synthetic Customer 5,Projects,Tabuk,NEOM Region,Tabuk → NEOM Region,Lowbed,2026-09-13T20:00:00+03:00,1400,1000,Standard,12,SAR
