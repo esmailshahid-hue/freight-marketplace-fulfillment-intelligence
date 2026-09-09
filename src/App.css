@@ -125,6 +125,17 @@ fieldset label + label { margin-top: 18px; }
 .threshold-controls { border: 1px solid var(--border); border-radius: 5px; background: #fff; }
 .threshold-controls > summary { padding: 13px 16px; font-size: 13px; }
 .threshold-controls fieldset { border: 0; padding-top: 5px; }
+@media (min-width: 801px) {
+  .scenario-layout { grid-template-columns: clamp(300px, 25vw, 340px) minmax(0, 1fr); gap: clamp(24px, 2vw, 30px); }
+  .scenario-controls { gap: 18px; }
+  .scenario-controls > fieldset { padding: 18px 20px 20px; }
+  .scenario-controls > fieldset > legend { margin-left: -2px; padding: 0 8px; line-height: 1.3; }
+  .scenario-controls .slider + .slider { margin-top: 22px; }
+  .scenario-controls .slider > span:first-child { align-items: baseline; gap: 16px; line-height: 1.5; }
+  .scenario-controls .slider input { display: block; margin: 10px 0 1px; }
+  .scenario-controls .range-limits { line-height: 1.4; }
+  .scenario-controls > .threshold-controls > summary { padding-inline: 20px; }
+}
 .action-delta > summary { display: flex; justify-content: space-between; gap: 12px; }
 .action-delta > summary::before { content: '+'; margin-right: 4px; }
 .action-delta[open] > summary::before { content: '−'; }
