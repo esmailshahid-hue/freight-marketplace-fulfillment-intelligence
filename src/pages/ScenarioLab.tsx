@@ -1,5 +1,5 @@
 import { useDisplayLabels } from '../ui/displayLabels'
-import { useDeferredValue, useMemo, useState } from 'react'
+import { useDeferredValue, useId, useMemo, useState } from 'react'
 import { runScenario } from '../analytics/scenarios'
 import type { Analysis } from '../analytics/engine'
 import type { Datasets } from '../data/schemas'
@@ -12,13 +12,21 @@ import { coverage, money, moneyChange, number, percent, signedPercent } from '..
 import { bucketForAction, uniquePairs } from '../ui/selectors'
 import { initialControls, toScenario, type ScenarioControls } from '../ui/scenarioControls'
 import type { Action } from '../analytics/types'
-function Slider({ name, value, min, max, step, onChange, format = signedPercent }: {
-  name: string; value: number; min: number; max: number; step: number; onChange: (value: number) => void; format?: (value: number) => string;
+function HelpTooltip({ label, children }: { label: string; children: string }) {
+  const id = useId()
+  return <span className="control-help">
+    <button type="button" className="control-help-trigger" aria-label={`About ${label}`} aria-describedby={id} onKeyDown={event => { if (event.key === 'Escape') event.currentTarget.blur() }}><span aria-hidden="true">i</span></button>
+    <span className="control-tooltip" id={id} role="tooltip">{children}</span>
+  </span>
+}
+function Slider({ name, value, min, max, step, onChange, format = signedPercent, help }: {
+  name: string; value: number; min: number; max: number; step: number; onChange: (value: number) => void; format?: (value: number) => string; help?: string;
 }) {
-  return <label className="slider"><span>{name} <strong>{format(value)}</strong></span>
-    <input type="range" aria-label={name} min={min} max={max} step={step} value={value} onChange={e => onChange(e.target.valueAsNumber)} aria-valuetext={format(value)} />
+  const inputId = useId()
+  return <div className="slider"><span className="slider-heading"><span className="slider-name"><label htmlFor={inputId}>{name}</label>{help && <HelpTooltip label={name}>{help}</HelpTooltip>}</span><strong>{format(value)}</strong></span>
+    <input id={inputId} type="range" aria-label={name} min={min} max={max} step={step} value={value} onChange={e => onChange(e.target.valueAsNumber)} aria-valuetext={format(value)} />
     <span className="range-limits"><span>{format(min)}</span><span>{format(max)}</span></span>
-  </label>
+  </div>
 }
 export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
   data: Datasets; analysis: Analysis; asOf: string; currency: string; onInspect: (selection: BucketSelection) => void;
@@ -66,9 +74,9 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
           <Slider name="Global carrier buy-rate change" value={controls.rate} min={-20} max={20} step={1} onChange={v => update('rate', v)} />
         </fieldset>
         <details className="threshold-controls"><summary>Operating thresholds</summary><fieldset><legend className="sr-only">Operating thresholds</legend>
-          <Slider name="Maximum deadhead km" value={controls.maxDeadhead} min={50} max={500} step={25} onChange={v => update('maxDeadhead', v)} format={v => `${v} km`} />
-          <Slider name="Minimum reliability" value={controls.minReliability} min={50} max={95} step={5} onChange={v => update('minReliability', v)} format={v => `${v}%`} />
-          <Slider name="Commercial floor" value={controls.commercialFloor} min={0} max={30} step={1} onChange={v => update('commercialFloor', v)} format={v => `${v}%`} />
+          <Slider name="Maximum deadhead km" value={controls.maxDeadhead} min={50} max={500} step={25} onChange={v => update('maxDeadhead', v)} format={v => `${v} km`} help="Sets how far a carrier can be from the lane origin before its capacity is excluded." />
+          <Slider name="Minimum reliability" value={controls.minReliability} min={50} max={95} step={5} onChange={v => update('minReliability', v)} format={v => `${v}%`} help="Excludes capacity from carriers whose historical reliability falls below this threshold." />
+          <Slider name="Commercial floor" value={controls.commercialFloor} min={0} max={30} step={1} onChange={v => update('commercialFloor', v)} format={v => `${v}%`} help="Prevents modeled buy-rate increases that would push gross take-rate below this level." />
         </fieldset></details>
         <fieldset><legend>Lane &amp; equipment override</legend>
           <label className="checkbox"><input type="checkbox" checked={controls.overrideEnabled} onChange={e => update('overrideEnabled', e.target.checked)} disabled={!pairs.length} />Enable lane override</label>

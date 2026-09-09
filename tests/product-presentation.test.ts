@@ -14,6 +14,18 @@ it('keeps the scenario comparison bound to engine output, including High/Critica
   for (const label of ['Newly created actions', 'Resolved actions', 'Actions whose severity increased', 'Actions whose severity decreased', 'Reset Scenario']) expect(html).toContain(label)
   expect(analysis).toEqual(before)
 })
+it('explains only the model-specific Scenario Lab operating thresholds', () => {
+  const data = fixture(), analysis = analyze(data, AS_OF)
+  const html = renderToStaticMarkup(createElement(ScenarioLab, { data, analysis, asOf: AS_OF, currency: 'SAR', onInspect: () => {} }))
+  expect(html.match(/class="control-help-trigger"/g)).toHaveLength(3)
+  for (const label of ['Maximum deadhead km', 'Minimum reliability', 'Commercial floor']) expect(html).toContain(`aria-label="About ${label}"`)
+  for (const copy of [
+    'Sets how far a carrier can be from the lane origin before its capacity is excluded.',
+    'Excludes capacity from carriers whose historical reliability falls below this threshold.',
+    'Prevents modeled buy-rate increases that would push gross take-rate below this level.',
+  ]) expect(html).toContain(copy)
+  for (const label of ['Global demand change', 'Global carrier capacity change', 'Global carrier buy-rate change']) expect(html).not.toContain(`aria-label="About ${label}"`)
+})
 it('shows recommendations before detailed capacity, preserving exact decision text', () => {
   const analysis = analyze(fixture(), AS_OF)
   const html = renderToStaticMarkup(createElement(BucketDrawer, { selection: { bucket: analysis.buckets[0], actions: analysis.actions, context: 'Baseline' }, onClose: () => {} }))
