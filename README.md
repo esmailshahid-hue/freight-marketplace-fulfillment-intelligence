@@ -2,6 +2,8 @@
 
 A freight marketplace can have enough physical trucks and still struggle to fulfill demand. Carrier rates, acceptance, service reliability and concentration all affect how much capacity is realistically usable.
 
+**Live demo:** [https://freight.esmailarshad.com](https://freight.esmailarshad.com)
+
 This portfolio MVP answers: **Where is fulfillment at risk, why, and what should Operations do?**
 
 ## What it does
