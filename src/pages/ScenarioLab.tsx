@@ -32,6 +32,7 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
     { name: 'Expected unfulfilled load-equivalents', baseline: number(result.baseline.kpis.expected_unfulfilled), scenario: number(result.scenario.kpis.expected_unfulfilled) },
     { name: 'Modeled revenue exposure', baseline: money(result.baseline.kpis.modeled_revenue_exposure, currency), scenario: money(result.scenario.kpis.modeled_revenue_exposure, currency) },
     { name: 'Gross take-rate proxy', baseline: percent(result.baseline.kpis.gross_take_rate_proxy), scenario: percent(result.scenario.kpis.gross_take_rate_proxy) },
+    { name: 'High / Critical planning buckets', baseline: number(result.baseline.kpis.high_critical_buckets, 0), scenario: number(result.scenario.kpis.high_critical_buckets, 0) },
     { name: 'Number of actions', baseline: number(result.baseline.kpis.action_count, 0), scenario: number(result.scenario.kpis.action_count, 0) },
   ]
   const inspect = (action: Action, context: 'Baseline' | 'Scenario') => {
@@ -40,7 +41,7 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
     if (bucket) onInspect({ bucket, actions: source.actions, context, actionId: action.action_id })
   }
   return <>
-    <div className="section-heading"><div><h2>Scenario Lab</h2><p className="section-intro">Changes recalculate the existing deterministic engine. Other tabs retain the baseline.</p></div>
+    <div className="section-heading"><div><h2>Scenario Lab</h2><p className="section-intro">What happens if demand, capacity or carrier rates change? Compare the outcome before making a decision.</p></div>
       <button onClick={() => setControls(initialControls(pairs[0]?.lane ?? '', pairs[0]?.equipment_type ?? ''))}>Reset Scenario</button>
     </div>
     <div className="scenario-layout">
@@ -50,11 +51,11 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
           <Slider name="Global carrier capacity change" value={controls.capacity} min={-50} max={50} step={5} onChange={v => update('capacity', v)} />
           <Slider name="Global carrier buy-rate change" value={controls.rate} min={-20} max={20} step={1} onChange={v => update('rate', v)} />
         </fieldset>
-        <fieldset><legend>Operating thresholds</legend>
+        <details className="threshold-controls"><summary>Operating thresholds</summary><fieldset><legend className="sr-only">Operating thresholds</legend>
           <Slider name="Maximum deadhead km" value={controls.maxDeadhead} min={50} max={500} step={25} onChange={v => update('maxDeadhead', v)} format={v => `${v} km`} />
           <Slider name="Minimum reliability" value={controls.minReliability} min={50} max={95} step={5} onChange={v => update('minReliability', v)} format={v => `${v}%`} />
           <Slider name="Commercial floor" value={controls.commercialFloor} min={0} max={30} step={1} onChange={v => update('commercialFloor', v)} format={v => `${v}%`} />
-        </fieldset>
+        </fieldset></details>
         <fieldset><legend>Lane &amp; equipment override</legend>
           <label className="checkbox"><input type="checkbox" checked={controls.overrideEnabled} onChange={e => update('overrideEnabled', e.target.checked)} disabled={!pairs.length} />Enable lane override</label>
           <p className="muted">Applied after global changes, only to the selected lane and equipment.</p>
@@ -73,16 +74,16 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
       </div>
       <div className="scenario-results" aria-busy={pending}>
         <p role="status">{pending ? 'Recalculating scenario… Results below reflect the previous settings until complete.' : 'Scenario results up to date.'}</p>
-        <h3>Baseline vs Scenario</h3>
+        <h3>Baseline vs Scenario</h3><p className="muted">Other views keep the baseline. Only this comparison uses your changed assumptions.</p>
         <Table caption="Baseline vs Scenario comparison" rows={metricRows} rowKey={r => r.name} columns={[
           { title: 'Metric', render: r => r.name }, { title: 'Baseline', render: r => r.baseline, numeric: true }, { title: 'Scenario', render: r => r.scenario, numeric: true },
         ]} />
         {([
           ['Newly created actions', result.deltas.new, 'Scenario'], ['Resolved actions', result.deltas.resolved, 'Baseline'],
           ['Actions whose severity increased', result.deltas.increased, 'Scenario'], ['Actions whose severity decreased', result.deltas.decreased, 'Scenario'],
-        ] as const).map(([title, actions, context]) => <section className="panel" key={title}>
-          <h3>{title} ({actions.length})</h3><ActionTable caption={title} actions={actions} currency={currency} onSelect={a => inspect(a, context)} empty="No action changes in this category." />
-        </section>)}
+        ] as const).map(([title, actions, context]) => <details className="panel action-delta" key={title} open={actions.length > 0}>
+          <summary>{title} <span className="count">{actions.length}</span></summary><ActionTable caption={title} actions={actions} currency={currency} onSelect={a => inspect(a, context)} empty="No action changes in this category." />
+        </details>)}
         <details className="panel"><summary>Inspect all scenario planning buckets</summary>
           <Table caption="Scenario planning buckets" rows={result.scenario.buckets} rowKey={b => b.id} onSelect={bucket => onInspect({ bucket, actions: result.scenario.actions, context: 'Scenario' })} columns={[
             { title: 'Lane', render: bucket => <button className="text-button lane" onClick={e => { e.stopPropagation(); onInspect({ bucket, actions: result.scenario.actions, context: 'Scenario' }) }}>{bucket.lane}</button> },

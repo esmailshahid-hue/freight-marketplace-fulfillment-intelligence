@@ -30,20 +30,29 @@ export function BucketDrawer({ selection, onClose }: { selection: BucketSelectio
       <header className="drawer-header"><div><p className="eyebrow">{selection.context} · Planning bucket</p>
         <h2 id="bucket-title">{b.lane}</h2><p>{b.equipment_type} · {dateLabel(b.pickup_date)} · <Badge value={b.status} /></p>
       </div><button onClick={onClose} autoFocus aria-label="Close drilldown">Close</button></header>
-      <section><h3>Capacity &amp; commercial economics</h3>
+      <section className="decision-summary"><h3>Decision summary</h3><dl className="detail-grid">
+        <div><dt>Expected unfulfilled load-equivalents</dt><dd>{number(b.expected_unfulfilled)}</dd></div>
+        <div><dt>Effective coverage</dt><dd>{coverage(b.effective_capacity_coverage)}</dd></div>
+        <div><dt>Modeled revenue exposure</dt><dd>{money(b.modeled_revenue_exposure, b.currency)}</dd></div>
+      </dl></section>
+      <section><h3>Why this bucket is at risk</h3><p>{b.risk.reason}</p>
+        <p><strong>Primary root cause:</strong> {label(b.root_cause.primary)}</p>
+        <p><strong>Secondary contributors:</strong> {b.root_cause.secondary.length ? b.root_cause.secondary.map(label).join(', ') : 'None'}</p>
+      </section>
+      <section><h3>Recommended actions</h3>
+        {!actions.length ? <p>No actions generated for this bucket.</p> : actions.map(a => <article className={`action-detail ${selection.actionId === a.action_id ? 'selected-action' : ''}`} key={a.action_id}>
+          <h4>{label(a.action_type)} <Badge value={a.severity} /></h4>
+          <p className="muted">Priority score: {number(a.action_priority_score)} · {selection.actionId === a.action_id ? 'Selected action' : selection.context}</p>
+          <p>{a.recommended_action}</p><details><summary>Supporting evidence</summary><ul>{a.evidence.map((e, i) => <li key={`${i}-${e}`}>{e}</li>)}</ul></details>
+        </article>)}
+        {b.rate_search?.recommendation && <RateScenario bucket={b} />}
+      </section>
+      <details className="drawer-section"><summary>Capacity &amp; commercial metrics</summary>
         {b.negative_gross_spread && <p className="notice danger">Negative gross spread: planned carrier buy cost exceeds sell revenue.</p>}
         <dl className="detail-grid">{metrics.map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{value}</dd></div>)}</dl>
         <p className="muted">{TAKE_RATE_HELP}</p>
-      </section>
-      <section><h3>Risk &amp; root-cause evidence</h3><p>{b.risk.reason}</p>
-        <p><strong>Primary root cause:</strong> {label(b.root_cause.primary)}</p>
-        <p><strong>Secondary contributors:</strong> {b.root_cause.secondary.length ? b.root_cause.secondary.map(label).join(', ') : 'None'}</p>
-        <p><strong>Pricing benchmark:</strong> {money(b.benchmark?.rate, b.currency)} · {b.benchmark ? `${label(b.benchmark.source)}, ${b.benchmark.days} days, ${b.benchmark.confidence}` : 'Unavailable'}</p>
-        <p><strong>Rate index:</strong> {number(b.rate_index, 3)}</p>
-        <h4>Warnings &amp; fallback information</h4>
-        {b.warnings.length ? <ul>{b.warnings.map((warning, i) => <li key={`${i}-${warning}`}>{warning}</li>)}</ul> : <p>No bucket warnings or fallbacks.</p>}
-      </section>
-      <section><h3>Carrier-level totals</h3><p className="muted">Each carrier includes all its qualified additive blocks in this bucket. Concentration uses these totals.</p>
+      </details>
+      <section><h3>Carrier-level capacity</h3><p className="muted">Each carrier includes all its qualified additive blocks in this bucket. Concentration uses these totals.</p>
         <Table caption="Carrier-level effective capacity totals" rows={b.capacity.carriers} rowKey={c => c.carrier_id} empty="No qualified carrier capacity." columns={[
           { title: 'Carrier', render: c => <>{c.carrier_name}<br /><span className="muted">{c.carrier_id}</span></> },
           { title: 'Total effective contribution', render: c => number(c.effective), numeric: true },
@@ -51,7 +60,7 @@ export function BucketDrawer({ selection, onClose }: { selection: BucketSelectio
           { title: 'Capacity blocks', render: c => c.capacity_ids.join(', ') },
         ]} />
       </section>
-      <section><h3>Individual capacity blocks</h3>
+      <details className="drawer-section"><summary>Individual capacity blocks ({b.capacity.contributions.length})</summary>
         <Table caption="Individual qualified and excluded capacity blocks" rows={b.capacity.contributions} rowKey={c => c.capacity_id} empty="No matching capacity blocks for this lane, equipment and date." columns={[
           { title: 'Capacity ID / carrier', render: c => <>{c.capacity_id}<br />{c.carrier_id}</> },
           { title: 'Physical trucks', render: c => number(c.available_trucks), numeric: true },
@@ -63,15 +72,12 @@ export function BucketDrawer({ selection, onClose }: { selection: BucketSelectio
           { title: 'Effective contribution', render: c => c.qualified && c.modeled.expected === null ? 'Unavailable' : number(c.effective), numeric: true },
           { title: 'Individual row share', render: c => percent(c.effective_share), numeric: true },
         ]} />
-      </section>
-      {b.rate_search?.recommendation && <RateScenario bucket={b} />}
-      <section><h3>Deterministic recommended actions &amp; evidence</h3>
-        {!actions.length ? <p>No actions generated for this bucket.</p> : actions.map(a => <article className={`action-detail ${selection.actionId === a.action_id ? 'selected-action' : ''}`} key={a.action_id}>
-          <h4>{label(a.action_type)} <Badge value={a.severity} /></h4>
-          <p className="muted">Priority score: {number(a.action_priority_score)} · {selection.actionId === a.action_id ? 'Selected action' : selection.context}</p>
-          <p>{a.recommended_action}</p><ul>{a.evidence.map((e, i) => <li key={`${i}-${e}`}>{e}</li>)}</ul>
-        </article>)}
-      </section>
+      </details>
+      <details className="drawer-section"><summary>Warnings &amp; model provenance ({b.warnings.length})</summary>
+        <p><strong>Pricing benchmark:</strong> {money(b.benchmark?.rate, b.currency)} · {b.benchmark ? `${label(b.benchmark.source)}, ${b.benchmark.days} days, ${b.benchmark.samples} accepted offers, ${b.benchmark.confidence}` : 'Unavailable'}</p>
+        <p><strong>Rate index:</strong> {number(b.rate_index, 3)}</p>
+        {b.warnings.length ? <ul>{b.warnings.map((warning, i) => <li key={`${i}-${warning}`}>{warning}</li>)}</ul> : <p>No bucket warnings or fallbacks.</p>}
+      </details>
     </div>
   </dialog>
 }

@@ -30,10 +30,10 @@ function Workspace({ snapshot, source }: { snapshot: Snapshot; source: 'sample' 
   }
   const activateTab = (next: (typeof TABS)[number]) => { setTab(next); if (next === 'Scenario Lab') setScenarioVisited(true) }
   return <>
-    <div className="data-context"><p><strong>{source === 'sample' ? 'Built-in synthetic sample' : 'Uploaded data'}</strong> · Seven-day baseline · {currency}</p>
+    <div className="data-context"><p><strong>{source === 'sample' ? 'Sample data' : 'Uploaded data'}</strong> · 7-day view · {currency}</p>
       <p>Analysis time: <time dateTime={asOf}>{new Intl.DateTimeFormat('en-GB', { timeZone: DEFAULT_TIME_ZONE, dateStyle: 'medium', timeStyle: 'short' }).format(new Date(asOf))}</time> · {DEFAULT_TIME_ZONE}</p>
     </div>
-    <details className="data-status"><summary>Data status: {source === 'sample' ? 'sample loaded' : 'uploaded data loaded'} · {warnings.length} validation warnings</summary>
+    <details className={`data-status ${validation.pastDue.length ? 'needs-attention' : ''}`}><summary>Data status: {source === 'sample' ? 'sample loaded' : 'uploaded data loaded'} · {warnings.length} warnings{validation.pastDue.length > 0 && ` · ${validation.pastDue.length} past-due rows excluded`}</summary>
       <p>{data.upcoming.length} upcoming rows · {data.historical.length} historical loads · {data.offers.length} offers · {data.capacity.length} capacity blocks · {data.payments?.length ?? 0} carrier payment rows. {source === 'sample' ? 'Dates shifted to this analysis snapshot.' : 'Uploaded dates have not been shifted.'}</p>
       {!data.payments && <p>Carrier payments not provided. Payment exposure actions are unavailable.</p>}
       <ValidationResults result={validation} />
@@ -44,7 +44,7 @@ function Workspace({ snapshot, source }: { snapshot: Snapshot; source: 'sample' 
         if (next !== null) { e.preventDefault(); activateTab(TABS[next]); document.getElementById(`tab-${next}`)?.focus() }
       }}>{name}</button>)}</div>
     <main id="main-content">{TABS.map((name, i) => <div role="tabpanel" id={`panel-${i}`} aria-labelledby={`tab-${i}`} hidden={tab !== name} key={name}>
-      {name === 'Operations Queue' && <OperationsQueue analysis={analysis} currency={currency} onAction={openAction} onBucket={openBucket} />}
+      {name === 'Operations Queue' && <OperationsQueue asOf={asOf} analysis={analysis} currency={currency} onAction={openAction} onBucket={openBucket} />}
       {name === 'Capacity & Fulfillment' && <CapacityFulfillment buckets={analysis.buckets} onBucket={openBucket} />}
       {name === 'Pricing & Economics' && <PricingEconomics currency={currency} buckets={analysis.buckets} onBucket={openBucket} />}
       {name === 'Supply Gaps' && <SupplyGaps gaps={analysis.supply_gaps} currency={currency} />}
@@ -74,7 +74,7 @@ function SampleWorkspace() {
     return () => { active = false }
   }, [attempt])
   return <>
-    {state.status === 'loading' && <main id="main-content"><p className="notice" role="status">Loading built-in synthetic sample and calculating baseline…</p></main>}
+    {state.status === 'loading' && <main id="main-content"><p className="notice" role="status">Loading sample data and preparing your action queue…</p></main>}
     {state.status === 'error' && <main id="main-content"><div className="notice danger" role="alert"><h2>Sample could not be loaded</h2><p>{state.message}</p>
       <button onClick={() => { setState({ status: 'loading' }); setAttempt(n => n + 1) }}>Retry sample loading</button>
     </div></main>}
@@ -87,17 +87,16 @@ export default function App() {
   const reset = () => { dispatch({ type: 'reset' }); setSampleVersion(n => n + 1) }
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">Skip to content</a>
-    <header className="app-header"><p className="eyebrow">Operations workspace</p>
+    <header className="app-header">
       <h1>Freight Marketplace Fulfillment &amp; Capacity Intelligence</h1>
       <p>Anticipates fulfillment risk across upcoming freight demand and recommends capacity, pricing and carrier actions.</p>
-    </header>
     <div className="source-controls" role="group" aria-label="Data source">
       {uploads.snapshot ? <><strong>Uploaded data</strong><button onClick={() => dispatch({ type: 'manage' })}>Manage uploaded data</button></> : <>
-        <button aria-pressed={uploads.mode === 'sample'} onClick={reset}>Built-in synthetic sample</button>
-        <button aria-pressed={uploads.mode === 'upload'} onClick={() => { if (uploads.mode !== 'upload') dispatch({ type: 'upload' }) }}>Upload own data</button>
+        <button aria-pressed={uploads.mode === 'sample'} onClick={reset}>Sample data</button>
+        <button aria-pressed={uploads.mode === 'upload'} onClick={() => { if (uploads.mode !== 'upload') dispatch({ type: 'upload' }) }}>Upload data</button>
       </>}
       <button onClick={reset}>Reset to sample data</button>
-    </div>
+    </div></header>
     {uploads.mode === 'sample' ? <>
       <p className="synthetic-notice">This demo uses synthetic freight-marketplace data. It does not represent any company's actual network or operations.</p>
       <SampleWorkspace key={sampleVersion} />

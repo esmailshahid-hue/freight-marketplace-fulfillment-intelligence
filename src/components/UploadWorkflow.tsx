@@ -2,6 +2,7 @@ import type { Dispatch } from 'react'
 import { SCHEMAS } from '../data/schemas'
 import type { DatasetName } from '../data/schemas'
 import { DATASETS, DATASET_LABELS, inspectUpload, missingMappings, readyToValidate, type UploadEvent, type UploadState } from '../ui/uploadState'
+import { Badge } from './Badge'
 import { ValidationResults } from './ValidationResults'
 
 export function UploadWorkflow({ state, dispatch }: { state: UploadState; dispatch: Dispatch<UploadEvent> }) {
@@ -19,15 +20,16 @@ export function UploadWorkflow({ state, dispatch }: { state: UploadState; dispat
   const result = state.validation?.result
   const ready = readyToValidate(state)
   return <main id="main-content">
-    <h2>Upload own data</h2>
+    <h2>Upload data</h2>
+    <ol className="workflow-steps" aria-label="Upload workflow"><li>Upload</li><li>Map columns</li><li>Validate</li><li>Analyze</li></ol>
     <p>Complete each step below. All four required datasets must come from your files. Filenames can be anything ending in .csv.</p>
-    <section className="panel" aria-labelledby="upload-files-heading"><h3 id="upload-files-heading">1. Upload files</h3>
+    <section className="panel" aria-labelledby="upload-files-heading"><h3 id="upload-files-heading">1. Upload</h3>
       <div className="upload-files">{DATASETS.map(dataset => {
         const slot = state.slots[dataset]
         const mappingReady = slot?.status === 'ready' && !missingMappings(dataset, slot.file).length
         const errors = result?.errors.filter(issue => issue.dataset === dataset)
         const warnings = result?.warnings.filter(issue => issue.dataset === dataset)
-        return <fieldset key={dataset}><legend>{DATASET_LABELS[dataset]} · {dataset === 'payments' ? 'Optional' : 'Required'}</legend>
+        return <fieldset key={dataset} className={slot?.status === 'error' || errors?.length ? 'file-error' : mappingReady ? 'file-ready' : slot?.status === 'ready' ? 'file-attention' : undefined}><legend>{DATASET_LABELS[dataset]} · {dataset === 'payments' ? 'Optional' : 'Required'}</legend>
           <label htmlFor={`file-${dataset}`}>{slot ? 'Replace CSV file' : 'Choose CSV file'}</label>
           <input id={`file-${dataset}`} type="file" accept=".csv,text/csv" onChange={e => {
             const file = e.currentTarget.files?.[0]
@@ -37,7 +39,7 @@ export function UploadWorkflow({ state, dispatch }: { state: UploadState; dispat
           {slot ? <>
             <p className="filename">{slot.name} · {slot.size.toLocaleString()} bytes</p>
             <p>{slot.status === 'ready' ? `${slot.file.rowCount.toLocaleString()} detected rows` : slot.status === 'reading' ? 'Reading file…' : 'Row count unavailable'}</p>
-            <p>Mapping: {slot.status !== 'ready' ? 'Pending' : mappingReady ? 'Ready for review' : 'Requires attention'}</p>
+            <p>Mapping: <Badge value={slot.status !== 'ready' ? 'Pending' : mappingReady ? 'Ready for review' : 'Requires attention'} /></p>
             <p>Validation: {!result ? 'Not validated' : errors?.length ? `${errors.length} blocking errors` : warnings?.length ? `Passed with ${warnings.length} warnings` : 'Passed'}</p>
             {slot.status === 'error' && <p role="alert" className="negative">{slot.message}</p>}
             <button onClick={() => dispatch({ type: 'remove', dataset })}>Remove {DATASET_LABELS[dataset].toLowerCase()}</button>
@@ -45,7 +47,7 @@ export function UploadWorkflow({ state, dispatch }: { state: UploadState; dispat
         </fieldset>
       })}</div>
     </section>
-    <section className="panel" aria-labelledby="mapping-heading"><h3 id="mapping-heading">2. Review column mappings</h3>
+    <section className="panel" aria-labelledby="mapping-heading"><h3 id="mapping-heading">2. Map columns</h3>
       <p>Matches use exact names and supported synonyms. Choose a column for every required field. To move a column between fields, first unmap it from its current field.</p>
       {DATASETS.map(dataset => {
         const slot = state.slots[dataset]
@@ -73,15 +75,15 @@ export function UploadWorkflow({ state, dispatch }: { state: UploadState; dispat
         </details>
       })}
     </section>
-    <section className="panel" aria-labelledby="validation-heading"><h3 id="validation-heading">3. Validate data</h3>
+    <section className="panel" aria-labelledby="validation-heading"><h3 id="validation-heading">3. Validate</h3>
       <p>Validation captures the analysis timestamp for this session. Uploaded dates remain unchanged.</p>
-      <button disabled={!ready} onClick={() => dispatch({ type: 'validate', asOf: new Date().toISOString() })}>Validate data</button>
+      <button className="primary-button" disabled={!ready} onClick={() => dispatch({ type: 'validate', asOf: new Date().toISOString() })}>Validate data</button>
       {!ready && <p role="status">Provide all required files and resolve required mappings before validation.</p>}
       {state.validation && <><p role="status">{result?.data ? 'Validation passed. Data is ready to analyze.' : 'Analysis blocked. Resolve the errors below and validate again.'} Analysis timestamp: <time dateTime={state.validation.asOf}>{state.validation.asOf}</time></p>
         <ValidationResults result={state.validation.result} /></>}
     </section>
     <section className="panel" aria-labelledby="analyze-heading"><h3 id="analyze-heading">4. Analyze</h3>
-      <button disabled={!ready || !result?.data} onClick={() => dispatch({ type: 'analyze' })}>Analyze Data</button>
+      <button className="primary-button" disabled={!ready || !result?.data} onClick={() => dispatch({ type: 'analyze' })}>Analyze Data</button>
       <p>Changing any file or mapping clears previous validation and analysis.</p>
     </section>
   </main>
