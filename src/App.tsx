@@ -90,8 +90,8 @@ export default function App() {
         <h2 id="how-it-works-title">How it works</h2>
         <ol>
           <li><strong>Review</strong><p>Start with Operations Queue to see which lanes need attention.</p></li>
-          <li><strong>Investigate</strong><p>Open a flagged lane to see what is driving the risk and which actions are recommended.</p></li>
-          <li><strong>Evaluate</strong><p>Use Pricing, Supply Gaps, or Scenario Lab to compare options and test changes before acting.</p></li>
+          <li><strong>Investigate</strong><p>Open a flagged lane to see what is driving the risk and the recommended actions.</p></li>
+          <li><strong>Evaluate</strong><p>Use Pricing, Supply Gaps, or Scenario Lab to compare options and test changes.</p></li>
         </ol>
       </section>
     <div className="source-controls"><div className="mode-selector" role="group" aria-label="Data source">

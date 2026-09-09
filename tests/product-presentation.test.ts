@@ -24,7 +24,7 @@ it('shows recommendations before detailed capacity, preserving exact decision te
 it('keeps sample as startup mode with compact source controls and no development labels', () => {
   const html = renderToStaticMarkup(createElement(App))
   expect(html).toContain('Freight Fulfillment Intelligence'); expect(html).not.toContain('Freight Marketplace Fulfillment')
-  for (const copy of ['How it works', 'Review', 'Start with Operations Queue to see which lanes need attention.', 'Investigate', 'Open a flagged lane to see what is driving the risk and which actions are recommended.', 'Evaluate', 'Use Pricing, Supply Gaps, or Scenario Lab to compare options and test changes before acting.']) expect(html).toContain(copy)
+  for (const copy of ['How it works', 'Review', 'Start with Operations Queue to see which lanes need attention.', 'Investigate', 'Open a flagged lane to see what is driving the risk and the recommended actions.', 'Evaluate', 'Use Pricing, Supply Gaps, or Scenario Lab to compare options and test changes.']) expect(html).toContain(copy)
   expect(html.indexOf('Find fulfillment gaps.')).toBeLessThan(html.indexOf('How it works'))
   expect(html).toContain('Sample data'); expect(html).toContain('Upload data'); expect(html).toContain('Reset to sample data')
   expect(html).not.toMatch(/Phase [234]/)
