@@ -16,6 +16,14 @@ const brief = (c: BriefContext = context()) => ({
 })
 const request = (body: unknown = context()) => new Request('https://app.example/api/operations-brief', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
 const provider = (value: unknown = brief()) => vi.fn<typeof fetch>().mockResolvedValue(Response.json({ choices: [{ message: { content: JSON.stringify(value) } }] }))
+const GENERIC_FAILURE = 'The brief could not be generated or verified. Your analysis is unaffected. Please try again.'
+async function captureFailure(fetcher: typeof fetch, input: Request = request()) {
+  const logger = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+  try {
+    const response = await handleOperationsBrief(input, env, fetcher)
+    return { response, logs: logger.mock.calls.map(call => call.map(String)) }
+  } finally { logger.mockRestore() }
+}
 
 describe('computed summary privacy boundary', () => {
   it('projects computed outputs only, with bounded arrays and no raw rows or unexpected runtime fields', () => {
@@ -91,17 +99,47 @@ describe('optional provider and output handling', () => {
     const valid = brief()
     for (const output of [{ ...valid, Why: 'Coverage is 987654.3%.' }, { ...valid, 'Watch next': 'Extra heading' }, { Why: 'Missing sections' }, { ...valid, Why: Array(250).fill('word').join(' ') }, { ...valid, Why: 'line\nbreak' }]) {
       expect(isOperationsBrief(output, context())).toBe(false)
-      expect((await handleOperationsBrief(request(), env, provider(output))).status).toBe(502)
+      expect((await captureFailure(provider(output))).response.status).toBe(502)
     }
   })
   it('provider errors, timeout and malformed responses do not expose details or alter analytics', async () => {
     const a = analysis(), before = structuredClone(a)
     for (const fetcher of [vi.fn<typeof fetch>().mockRejectedValue(new Error(`private ${env.ANALYSIS_LLM_API_KEY}`)), vi.fn<typeof fetch>().mockRejectedValue(new DOMException('Timeout', 'TimeoutError')), vi.fn<typeof fetch>().mockResolvedValue(new Response('private error', { status: 429 })), vi.fn<typeof fetch>().mockResolvedValue(Response.json({ choices: [] })), vi.fn<typeof fetch>().mockResolvedValue(Response.json({ choices: [{ message: { content: 'not json' } }] }))]) {
-      const response = await handleOperationsBrief(request(buildBriefContext(a, AS_OF, 'SAR')), env, fetcher)
+      const { response } = await captureFailure(fetcher, request(buildBriefContext(a, AS_OF, 'SAR')))
       expect(response.status).toBe(502)
       const text = await response.text(); expect(text).toContain('analysis is unaffected'); expect(text).not.toContain(env.ANALYSIS_LLM_API_KEY); expect(text).not.toContain('private')
     }
     expect(a).toEqual(before)
+  })
+  it('logs only safe metadata for provider HTTP failures and keeps the public response generic', async () => {
+    const privateBody = 'PRIVATE_PROVIDER_BODY', privateContext = context()
+    privateContext.top_actions[0]!.recommendation = 'PRIVATE_CONTEXT_VALUE'
+    const { response, logs } = await captureFailure(vi.fn<typeof fetch>().mockResolvedValue(new Response(privateBody, { status: 429 })), request(privateContext))
+    expect(response.status).toBe(502); expect(await response.json()).toEqual({ error: GENERIC_FAILURE })
+    expect(logs).toHaveLength(1)
+    expect(JSON.parse(logs[0]![0]!)).toEqual({ category: 'provider_http_error', status: 429, provider_host: 'provider.example', model: 'test-model' })
+    const serialized = JSON.stringify(logs)
+    for (const secret of [env.ANALYSIS_LLM_API_KEY, privateBody, 'PRIVATE_CONTEXT_VALUE']) expect(serialized).not.toContain(secret)
+  })
+  it.each([
+    ['provider_timeout', vi.fn<typeof fetch>().mockRejectedValue(new DOMException('PRIVATE_TIMEOUT_DETAIL', 'TimeoutError'))],
+    ['provider_network_error', vi.fn<typeof fetch>().mockRejectedValue(new Error('PRIVATE_NETWORK_DETAIL'))],
+    ['invalid_provider_response', vi.fn<typeof fetch>().mockResolvedValue(Response.json({ choices: [] }))],
+    ['invalid_provider_json', vi.fn<typeof fetch>().mockResolvedValue(new Response('PRIVATE_INVALID_JSON', { headers: { 'Content-Type': 'application/json' } }))],
+    ['brief_validation_failed', provider({ ...brief(), Why: 'Unsupported 987654.3%.' })],
+  ])('categorizes %s without logging private failure detail', async (category, fetcher) => {
+    const { response, logs } = await captureFailure(fetcher)
+    expect(response.status).toBe(502); expect(await response.json()).toEqual({ error: GENERIC_FAILURE })
+    expect(logs).toEqual([[JSON.stringify({ category })]])
+    expect(JSON.stringify(logs)).not.toMatch(/PRIVATE_|a → b|Authorization|ANALYSIS_LLM_API_KEY/)
+  })
+  it('categorizes unexpected request-processing failures without logging the error', async () => {
+    const body = new ReadableStream({ pull(controller) { controller.error(new Error('PRIVATE_STREAM_DETAIL')) } })
+    const input = new Request('https://app.example/api/operations-brief', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, duplex: 'half' } as RequestInit)
+    const { response, logs } = await captureFailure(provider(), input)
+    expect(response.status).toBe(502); expect(await response.json()).toEqual({ error: GENERIC_FAILURE })
+    expect(logs).toEqual([[JSON.stringify({ category: 'unexpected_server_error' })]])
+    expect(JSON.stringify(logs)).not.toContain('PRIVATE_STREAM_DETAIL')
   })
   it('client handles endpoint failure or unverifiable narration without mutating results', async () => {
     const a = analysis(), before = structuredClone(a)
