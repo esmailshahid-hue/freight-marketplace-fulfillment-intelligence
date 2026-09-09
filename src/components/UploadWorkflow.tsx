@@ -21,6 +21,8 @@ export function UploadWorkflow({ state, dispatch }: { state: UploadState; dispat
   const ready = readyToValidate(state)
   return <main id="main-content">
     <h2>Upload data</h2>
+    <p>Start with the sample data. Upload your own files only if you want to test the model against your operation.</p>
+    <p><a className="text-button" href="/templates/csv-templates.zip" download>Download CSV templates</a> <span className="muted">· Carrier payments optional. Replace example rows and dates with your own.</span></p>
     <ol className="workflow-steps" aria-label="Upload workflow"><li>Upload</li><li>Map columns</li><li>Validate</li><li>Analyze</li></ol>
     <p>Add four required CSVs. Carrier payments are optional.</p>
     <section className="panel" aria-labelledby="upload-files-heading"><h3 id="upload-files-heading">1. Upload</h3>

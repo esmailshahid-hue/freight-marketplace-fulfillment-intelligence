@@ -1,0 +1,2 @@
+carrier_id,open_payable,overdue_payable,max_days_overdue,last_payment_date,payment_status,currency
+EXAMPLE-CARRIER-001,1800,0,0,2026-09-01,Current,SAR

@@ -1,0 +1,2 @@
+load_id,customer,business_unit,origin,destination,lane,equipment_type,pickup_datetime,sell_rate,planned_buy_rate,priority,load_count,currency
+EXAMPLE-UPCOMING-001,Example Customer,Domestic,Riyadh,Dammam,Riyadh → Dammam,Dry Van,2026-09-10T09:00:00+03:00,2200,1800,Standard,1,SAR

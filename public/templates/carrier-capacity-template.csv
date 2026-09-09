@@ -1,0 +1,2 @@
+capacity_id,carrier_id,carrier_name,lane,equipment_type,capacity_date,available_trucks,deadhead_km_to_origin,active,contract_status
+EXAMPLE-CAPACITY-001,EXAMPLE-CARRIER-001,Example Carrier,Riyadh → Dammam,Dry Van,2026-09-10,2,25,true,Spot

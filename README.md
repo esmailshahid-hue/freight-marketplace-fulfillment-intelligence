@@ -47,6 +47,8 @@ Baseline and scenario results come from `runScenario()` and the same `analyze()`
 
 Choose **Upload data**, then **Upload → Map columns → Validate → Analyze**.
 
+**Download CSV templates** in the app provides five CSVs with canonical headers and synthetic examples (carrier payments optional); replace the example rows and dates with your own. Maintainers can regenerate the static ZIP from the schemas with `npm run generate:templates` (requires the system `zip` utility).
+
 | Upload slot | Required | Contents |
 | --- | --- | --- |
 | Upcoming loads | Yes | Future demand, pickup times, equipment and sell/planned buy rates |

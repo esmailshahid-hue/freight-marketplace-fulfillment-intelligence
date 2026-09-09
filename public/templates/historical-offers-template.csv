@@ -1,0 +1,2 @@
+offer_id,load_id,date,lane,equipment_type,carrier_id,offered_buy_rate,accepted,sell_rate,currency
+EXAMPLE-OFFER-001,EXAMPLE-HISTORY-001,2026-09-01,Riyadh → Dammam,Dry Van,EXAMPLE-CARRIER-001,1800,true,2200,SAR

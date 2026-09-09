@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "generate:sample": "node --import tsx scripts/generate-sample-data.ts",
+    "generate:templates": "node --import tsx scripts/generate-templates.ts",
     "verify:scenarios": "vitest run tests/planted-scenarios.test.ts && node --import tsx scripts/verify-scenarios.ts",
     "typecheck": "tsc -b && tsc -p tsconfig.tests.json"
   },

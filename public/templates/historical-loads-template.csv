@@ -1,0 +1,2 @@
+load_id,date,customer,business_unit,origin,destination,lane,equipment_type,carrier_id,sell_rate,final_buy_rate,fulfilled,pickup_ontime,delivery_ontime,cancelled,failure_reason,currency
+EXAMPLE-HISTORY-001,2026-09-01,Example Customer,Domestic,Riyadh,Dammam,Riyadh → Dammam,Dry Van,EXAMPLE-CARRIER-001,2200,1800,true,true,true,false,,SAR
