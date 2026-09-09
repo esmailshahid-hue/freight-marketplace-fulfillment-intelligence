@@ -79,3 +79,39 @@ it('supports explicit resolution of ambiguous headers without rewriting CSV inpu
   expect(files.upcoming).toBe(original)
   expect(validateCsv(files, AS_OF, 'Asia/Riyadh', { upcoming: { planned_buy_rate: 'nonexistent' } }).data).toBeNull()
 })
+it('allows non-applicable service fields on never-assigned unfulfilled loads', () => {
+  const d = fixture()
+  d.historical = [historyRow({ carrier_id: null, final_buy_rate: null, fulfilled: false, pickup_ontime: null, delivery_ontime: null })]
+  const r = check(d)
+  expect(r.errors).toEqual([])
+  expect(r.warnings.filter(w => w.dataset === 'historical')).toEqual([])
+  expect(r.data?.historical[0].pickup_ontime).toBeNull()
+  expect(r.data?.historical[0].delivery_ontime).toBeNull()
+})
+it.each([
+  { carrier_id: 'c', fulfilled: false },
+  { carrier_id: 'c', fulfilled: true },
+  { carrier_id: null, fulfilled: true },
+])('retains missing service warnings where service may apply: %j', values => {
+  const d = fixture(); d.historical = [historyRow({ ...values, pickup_ontime: null })]
+  const r = check(d)
+  expect(r.errors).toEqual([])
+  expect(r.warnings.some(w => w.message === 'Missing pickup/delivery service metrics')).toBe(true)
+})
+it('still rejects invalid service booleans on never-assigned loads', () => {
+  const d = fixture(); d.historical = [historyRow({ carrier_id: null, final_buy_rate: null, fulfilled: false, pickup_ontime: null, delivery_ontime: null })]
+  const files = serializeDatasets(d)
+  files.historical = files.historical!.replace(',false,,,', ',false,unknown,,')
+  expect(validateCsv(files, AS_OF).errors.some(e => e.field === 'pickup_ontime' && e.message === 'Invalid boolean')).toBe(true)
+})
+it('keeps the committed sample clean except for its genuine additive-block warning', async () => {
+  const { readFileSync } = await import('node:fs')
+  const { FILE_NAMES } = await import('../src/data/schemas')
+  const files = Object.fromEntries(Object.entries(FILE_NAMES).map(([dataset, filename]) => [dataset, readFileSync(new URL(`../public/sample-data/${filename}`, import.meta.url), 'utf8')]))
+  const metadata = JSON.parse(readFileSync(new URL('../public/sample-data/sample-metadata.json', import.meta.url), 'utf8'))
+  const r = validateCsv(files, metadata.sample_as_of)
+  expect(r.errors).toEqual([])
+  expect(r.warnings).toHaveLength(1)
+  expect(r.warnings[0].message).toBe('Possible duplicated capacity blocks — confirm these rows are additive.')
+  expect(r.data?.historical).toHaveLength(1200)
+})

@@ -3,6 +3,8 @@ import { runScenario } from '../analytics/scenarios'
 import type { Analysis } from '../analytics/engine'
 import type { Datasets } from '../data/schemas'
 import type { BucketSelection } from '../components/BucketDrawer'
+import { changeLabel } from '../ui/comparison'
+import { ScenarioComparison } from '../components/ScenarioComparison'
 import { ActionTable } from '../components/ActionTable'
 import { Table } from '../components/Table'
 import { coverage, money, number, percent, signedPercent } from '../ui/format'
@@ -35,13 +37,23 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
     { name: 'High / Critical planning buckets', baseline: number(result.baseline.kpis.high_critical_buckets, 0), scenario: number(result.scenario.kpis.high_critical_buckets, 0) },
     { name: 'Number of actions', baseline: number(result.baseline.kpis.action_count, 0), scenario: number(result.scenario.kpis.action_count, 0) },
   ]
+  const before = result.baseline.kpis, after = result.scenario.kpis
+  const changes = [
+    changeLabel(before.projected_fulfillment_pct, after.projected_fulfillment_pct, ' pp', 100),
+    changeLabel(before.effective_capacity_coverage, after.effective_capacity_coverage, '×', 1, 2),
+    changeLabel(before.expected_unfulfilled, after.expected_unfulfilled, ' loads'),
+    changeLabel(before.modeled_revenue_exposure, after.modeled_revenue_exposure, ` ${currency}`, 1, 2),
+    changeLabel(before.gross_take_rate_proxy, after.gross_take_rate_proxy, ' pp', 100),
+    changeLabel(before.high_critical_buckets, after.high_critical_buckets, '', 1, 0),
+    changeLabel(before.action_count, after.action_count, '', 1, 0),
+  ]
   const inspect = (action: Action, context: 'Baseline' | 'Scenario') => {
     const source = context === 'Baseline' ? result.baseline : result.scenario
     const bucket = bucketForAction(action, source.buckets)
     if (bucket) onInspect({ bucket, actions: source.actions, context, actionId: action.action_id })
   }
   return <>
-    <div className="section-heading"><div><h2>Scenario Lab</h2><p className="section-intro">What happens if demand, capacity or carrier rates change? Compare the outcome before making a decision.</p></div>
+    <div className="section-heading"><div><h2>Scenario Lab</h2><p className="section-intro">Test demand, capacity and rate changes.</p></div>
       <button onClick={() => setControls(initialControls(pairs[0]?.lane ?? '', pairs[0]?.equipment_type ?? ''))}>Reset Scenario</button>
     </div>
     <div className="scenario-layout">
@@ -73,18 +85,21 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
         </fieldset>
       </div>
       <div className="scenario-results" aria-busy={pending}>
-        <p role="status">{pending ? 'Recalculating scenario… Results below reflect the previous settings until complete.' : 'Scenario results up to date.'}</p>
-        <h3>Baseline vs Scenario</h3><p className="muted">Other views keep the baseline. Only this comparison uses your changed assumptions.</p>
-        <Table caption="Baseline vs Scenario comparison" rows={metricRows} rowKey={r => r.name} columns={[
-          { title: 'Metric', render: r => r.name }, { title: 'Baseline', render: r => r.baseline, numeric: true }, { title: 'Scenario', render: r => r.scenario, numeric: true },
+        <p role="status">{pending ? 'Recalculating… Showing previous results.' : 'Results up to date.'}</p>
+        <h3>Baseline → Scenario</h3><p className="muted">Other views keep the baseline.</p>
+        <ScenarioComparison baseline={result.baseline.kpis} scenario={result.scenario.kpis} currency={currency} />
+        <details className="comparison-detail"><summary>All comparison metrics</summary>
+        <Table caption="Baseline vs Scenario comparison" rows={metricRows.map((r, i) => ({ ...r, change: changes[i] }))} rowKey={r => r.name} columns={[
+          { title: 'Metric', render: r => r.name }, { title: 'Baseline', render: r => r.baseline, numeric: true }, { title: 'Scenario', render: r => r.scenario, numeric: true }, { title: 'Change', render: r => r.change, numeric: true },
         ]} />
+        </details>
         {([
           ['Newly created actions', result.deltas.new, 'Scenario'], ['Resolved actions', result.deltas.resolved, 'Baseline'],
           ['Actions whose severity increased', result.deltas.increased, 'Scenario'], ['Actions whose severity decreased', result.deltas.decreased, 'Scenario'],
         ] as const).map(([title, actions, context]) => <details className="panel action-delta" key={title} open={actions.length > 0}>
-          <summary>{title} <span className="count">{actions.length}</span></summary><ActionTable caption={title} actions={actions} currency={currency} onSelect={a => inspect(a, context)} empty="No action changes in this category." />
+          <summary>{title} <span className="count">{actions.length}</span></summary><ActionTable caption={title} actions={actions} currency={currency} onSelect={a => inspect(a, context)} empty="No changes." />
         </details>)}
-        <details className="panel"><summary>Inspect all scenario planning buckets</summary>
+        <details className="panel"><summary>All scenario lanes</summary>
           <Table caption="Scenario planning buckets" rows={result.scenario.buckets} rowKey={b => b.id} onSelect={bucket => onInspect({ bucket, actions: result.scenario.actions, context: 'Scenario' })} columns={[
             { title: 'Lane', render: bucket => <button className="text-button lane" onClick={e => { e.stopPropagation(); onInspect({ bucket, actions: result.scenario.actions, context: 'Scenario' }) }}>{bucket.lane}</button> },
             { title: 'Equipment', render: b => b.equipment_type }, { title: 'Pickup date', render: b => b.pickup_date },

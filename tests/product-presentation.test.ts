@@ -30,3 +30,31 @@ it('keeps sample as startup mode with compact source controls and no development
   expect(queue).toContain('98.0%'); expect(queue).toContain('Prioritized action queue')
   expect(queue).toContain('Raw CSV files and rows stay in your browser.')
 })
+it('groups related actions once per bucket in engine order without summing overlapping exposure', async () => {
+  const { generateSynthetic } = await import('../src/data/synthetic')
+  const { NeedsAttention } = await import('../src/components/NeedsAttention')
+  const { bucketForAction, actionsForBucket } = await import('../src/ui/selectors')
+  const { money } = await import('../src/ui/format')
+  const analysis = analyze(generateSynthetic(), AS_OF), before = structuredClone(analysis)
+  const groups = [...new Map(analysis.actions.map(a => bucketForAction(a, analysis.buckets)!).map(b => [b.id, b])).values()].slice(0, 3)
+  const html = renderToStaticMarkup(createElement(NeedsAttention, { analysis, onAction: () => {} }))
+  expect((html.match(/class="attention-card/g) ?? [])).toHaveLength(groups.length)
+  for (const b of groups) {
+    expect(html).toContain(money(b.modeled_revenue_exposure, b.currency))
+    for (const a of actionsForBucket(b, analysis.actions)) expect(html).toContain(a.recommended_action.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll("'", '&#x27;').replaceAll('>', '&gt;').replaceAll('<', '&lt;'))
+  }
+  expect(html.indexOf(groups[0].lane)).toBeLessThan(html.indexOf(groups[1].lane))
+  expect(analysis).toEqual(before)
+})
+it('shows scenario deterioration as signed display deltas and preserves unavailable states', async () => {
+  const { changeLabel } = await import('../src/ui/comparison')
+  expect(changeLabel(.822, .74, ' pp', 100)).toBe('−8.2 pp')
+  expect(changeLabel(27.6, 39.1, ' loads')).toBe('+11.5 loads')
+  expect(changeLabel(0, .02, ' SAR', 1, 2)).toBe('+0.02 SAR')
+  expect(changeLabel(null, 1)).toBe('Change unavailable')
+  expect(changeLabel(1, 1)).toBe('No change')
+  const { ScenarioComparison } = await import('../src/components/ScenarioComparison')
+  const baseline = analyze(fixture(), AS_OF).kpis
+  const html = renderToStaticMarkup(createElement(ScenarioComparison, { baseline, scenario: { ...baseline, expected_unfulfilled: baseline.expected_unfulfilled + 4 }, currency: 'SAR' }))
+  expect(html).toContain('metric-delta negative'); expect(html).toContain('+4.0 loads')
+})

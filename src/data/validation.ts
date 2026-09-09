@@ -75,7 +75,8 @@ export function validateCsv(files: CsvFiles, analysisTime: string, timeZone = DE
       if (dataset === 'upcoming' && Number(row.planned_buy_rate) > Number(row.sell_rate)) warn('Negative gross spread')
       if (dataset === 'historical') {
         if (row.cancelled && row.fulfilled) warn('Inconsistent cancelled/fulfilled row; fulfilled is source of truth')
-        if (row.pickup_ontime === null || row.delivery_ontime === null) warn('Missing pickup/delivery service metrics')
+        // Service metrics are not applicable to loads never assigned or fulfilled (spec §6.3).
+        if ((row.carrier_id || row.fulfilled) && (row.pickup_ontime === null || row.delivery_ontime === null)) warn('Missing pickup/delivery service metrics')
       }
       rows.push(row)
     })

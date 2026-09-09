@@ -40,7 +40,7 @@ export function BucketDrawer({ selection, onClose }: { selection: BucketSelectio
         <p><strong>Secondary contributors:</strong> {b.root_cause.secondary.length ? b.root_cause.secondary.map(label).join(', ') : 'None'}</p>
       </section>
       <section><h3>Recommended actions</h3>
-        {!actions.length ? <p>No actions generated for this bucket.</p> : actions.map(a => <article className={`action-detail ${selection.actionId === a.action_id ? 'selected-action' : ''}`} key={a.action_id}>
+        {!actions.length ? <p>No actions needed.</p> : actions.map(a => <article className={`action-detail ${selection.actionId === a.action_id ? 'selected-action' : ''}`} key={a.action_id}>
           <h4>{label(a.action_type)} <Badge value={a.severity} /></h4>
           <p className="muted">Priority score: {number(a.action_priority_score)} · {selection.actionId === a.action_id ? 'Selected action' : selection.context}</p>
           <p>{a.recommended_action}</p><details><summary>Supporting evidence</summary><ul>{a.evidence.map((e, i) => <li key={`${i}-${e}`}>{e}</li>)}</ul></details>
@@ -52,7 +52,7 @@ export function BucketDrawer({ selection, onClose }: { selection: BucketSelectio
         <dl className="detail-grid">{metrics.map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{value}</dd></div>)}</dl>
         <p className="muted">{TAKE_RATE_HELP}</p>
       </details>
-      <section><h3>Carrier-level capacity</h3><p className="muted">Each carrier includes all its qualified additive blocks in this bucket. Concentration uses these totals.</p>
+      <section><h3>Carrier-level capacity</h3><p className="muted">Carrier totals include all qualified capacity blocks.</p>
         <Table caption="Carrier-level effective capacity totals" rows={b.capacity.carriers} rowKey={c => c.carrier_id} empty="No qualified carrier capacity." columns={[
           { title: 'Carrier', render: c => <>{c.carrier_name}<br /><span className="muted">{c.carrier_id}</span></> },
           { title: 'Total effective contribution', render: c => number(c.effective), numeric: true },

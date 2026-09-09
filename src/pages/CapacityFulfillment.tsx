@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { PlanningBucket } from '../analytics/types'
 import { Table } from '../components/Table'
+import { CoverageBar } from '../components/CoverageBar'
 import { Badge } from '../components/Badge'
 import { coverage, dateLabel, label, number, percent } from '../ui/format'
 import { EMPTY_FILTERS, filterBuckets } from '../ui/selectors'
@@ -15,7 +16,7 @@ export function CapacityFulfillment({ buckets, onBucket }: { buckets: PlanningBu
     { field: 'status' as const, label: 'Capacity status', values: ['Healthy', 'Watch', 'At Risk', 'Critical'] },
   ]
   return <>
-    <h2>Capacity &amp; Fulfillment</h2><p className="section-intro">Compare usable capacity with upcoming demand. Select a lane to inspect the decision and carrier supply.</p>
+    <h2>Capacity &amp; Fulfillment</h2><p className="section-intro">Can available carrier supply cover demand?</p>
     <div className="filters">{options.map(o => <label key={o.field}>{o.label}<select value={filters[o.field]} onChange={e => setFilters({ ...filters, [o.field]: e.target.value })}>
       <option value="">All</option>{o.values.map(value => <option key={value} value={value}>{o.field === 'date' ? dateLabel(value) : value}</option>)}
     </select></label>)}<button onClick={() => setFilters(EMPTY_FILTERS)}>Clear filters</button></div>
@@ -26,8 +27,8 @@ export function CapacityFulfillment({ buckets, onBucket }: { buckets: PlanningBu
       { title: 'Pickup date', render: b => dateLabel(b.pickup_date) },
       { title: 'Demand', render: b => number(b.upcoming_loads), numeric: true },
       { title: 'Effective capacity', render: b => b.capacity.estimate_available ? number(b.capacity.effective) : 'Unavailable', numeric: true },
-      { title: 'Effective coverage', render: b => coverage(b.effective_capacity_coverage), numeric: true },
-      { title: 'Unfulfilled loads', render: b => number(b.expected_unfulfilled), numeric: true },
+      { title: 'Effective coverage', render: b => <CoverageBar value={b.effective_capacity_coverage} />, numeric: true },
+      { title: 'Loads at risk', render: b => number(b.expected_unfulfilled), numeric: true },
       { title: 'Capacity status', render: b => <Badge value={b.status} /> },
       { title: 'Risk', render: b => <>{number(b.risk.score)} <Badge value={b.risk.band} /></> },
       { title: 'Root cause', render: b => label(b.root_cause.primary) },
