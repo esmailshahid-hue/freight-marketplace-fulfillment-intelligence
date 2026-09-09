@@ -14,7 +14,7 @@ it('distinguishes unavailable numbers from zero and preserves signed economics',
 })
 it('formats calendar dates without a host-timezone day shift and labels enum values', () => {
   expect(dateLabel('2026-09-07')).toBe('07 Sept 2026')
-  expect(label('RAISE_BUY_RATE')).toBe('Raise buy rate'); expect(label(null)).toBe('None')
+  expect(label('RAISE_BUY_RATE')).toBe('Raise buy rate'); expect(label('PREBOOK_CAPACITY')).toBe('Pre-book capacity'); expect(label(null)).toBe('None')
 })
 it('filters existing buckets without mutating or recomputing metrics', () => {
   const a = analyze(fixture(), AS_OF), b = a.buckets[0], snapshot = structuredClone(a)

@@ -5,6 +5,7 @@ import { requestOperationsBrief } from '../src/brief/client'
 import { handleOperationsBrief } from '../server/operationsBrief'
 import endpoint from '../api/operations-brief'
 import { fixture, AS_OF } from './helpers'
+import { generateSynthetic, SAMPLE_METADATA } from '../src/data/synthetic'
 const env = { ANALYSIS_LLM_API_KEY: 'test-only-placeholder', ANALYSIS_LLM_MODEL: 'test-model', ANALYSIS_LLM_BASE_URL: 'https://provider.example/v1' }
 const analysis = () => analyze(fixture(), AS_OF)
 const context = () => buildBriefContext(analysis(), AS_OF, 'SAR')
@@ -41,6 +42,8 @@ describe('computed summary privacy boundary', () => {
     expect(c.top_actions).toHaveLength(5); expect(c.at_risk_buckets).toHaveLength(5); expect(c.supply_priorities).toHaveLength(5)
     expect(c.top_actions[0].recommendation).toBe(a.actions[0].recommended_action)
     expect(c.kpis.projected_fulfillment).toBe('98.0%')
+    expect(c.kpis.upcoming_loads).toBe('10')
+    expect(c.kpis.unfulfilled_load_equivalents).toBe('0.2')
   })
   it.each(['csv', 'data', 'upcoming', 'capacity', 'historical', 'offers', 'payments'])('rejects raw/extra %s fields before provider invocation', async key => {
     const fetcher = provider()
@@ -63,6 +66,26 @@ describe('computed summary privacy boundary', () => {
     expect(JSON.parse(String(options?.body))).toEqual(context())
     expect(String(options?.body)).not.toContain('PRIVATE_CSV')
     expect(options?.headers).not.toHaveProperty('Authorization')
+  })
+  it('formats whole and fractional sample quantities for a valid four-section brief', async () => {
+    const sample = buildBriefContext(analyze(generateSynthetic(), SAMPLE_METADATA.sample_as_of), SAMPLE_METADATA.sample_as_of, SAMPLE_METADATA.currency)
+    expect(sample.kpis.upcoming_loads).toBe('155')
+    expect(sample.kpis.unfulfilled_load_equivalents).toBe('27.6')
+    expect(sample.demand_spikes.map(b => b.weekly_demand)).toEqual(['27', '12'])
+    expect(sample.supply_priorities.at(-1)?.upcoming_exposure).toBe('0')
+    expect(sample.top_actions.some(a => a.action === 'Pre-book capacity')).toBe(true)
+    const output = {
+      'What requires attention': `${sample.kpis.high_critical_buckets} high/critical planning buckets require attention across ${sample.kpis.upcoming_loads} upcoming loads.`,
+      Why: `Modeled acceptance based on historical behavior is low, with ${sample.kpis.unfulfilled_load_equivalents} load-equivalents unfulfilled.`,
+      'Commercial impact': `Modeled revenue exposure is ${sample.kpis.modeled_revenue_exposure}, and the gross take-rate proxy is ${sample.kpis.gross_take_rate_proxy}.`,
+      'Recommended actions': 'Raise buy rates where recommended, then Pre-book capacity in the supplied priority order.',
+    }
+    expect(Object.keys(output)).toEqual([...BRIEF_SECTIONS]); expect(isOperationsBrief(output, sample)).toBe(true)
+    const fetcher = provider(output), response = await handleOperationsBrief(request(sample), env, fetcher)
+    expect(response.status).toBe(200); expect(await response.json()).toEqual({ brief: output })
+    const sent = JSON.parse(String(fetcher.mock.calls[0]![1]!.body))
+    expect(JSON.parse(sent.messages[1].content)).toEqual(sample)
+    expect(sent.messages[1].content).not.toMatch(/"(?:upcoming|capacity|historical|offers|payments)"\s*:/)
   })
 })
 describe('optional provider and output handling', () => {
@@ -138,6 +161,13 @@ describe('optional provider and output handling', () => {
     expect(fetcher).toHaveBeenCalledTimes(1)
     expect(JSON.parse(sent.messages[1].content)).toEqual(context())
     expect(sent.messages[0].content).toContain('Do not calculate')
+    expect(sent.messages[0].content).toContain('high/critical planning buckets')
+    expect(sent.messages[0].content).toContain('modeled acceptance based on historical behavior')
+    expect(sent.messages[0].content).toContain('Pre-book capacity')
+    expect(sent.messages[0].content).toContain('Every sentence must state a problem, evidence, commercial impact or an actual recommended action')
+    expect(sent.messages[0].content).not.toContain('high-critical')
+    expect(sent.messages[0].content).not.toContain('historical modeled acceptance')
+    expect(sent.messages[0].content).not.toContain('Actions target reducing exposure')
     expect(Object.keys(brief())).toEqual([...BRIEF_SECTIONS])
     expect(isOperationsBrief(brief(), context())).toBe(true)
   })

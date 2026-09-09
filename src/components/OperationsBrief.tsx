@@ -25,13 +25,13 @@ export function OperationsBrief({ analysis, asOf, currency }: { analysis: Analys
       if (!controller.signal.aborted) setState({ status: 'error', message: 'Operations Brief is unavailable. Your analysis is unaffected. Please try again.' })
     } finally { if (pending.current === controller) pending.current = null }
   }
-  if (!available) return <details className="brief-unavailable"><summary>Operations Brief · Unavailable</summary><p>Raw CSV files and rows stay in your browser. The optional brief is currently unavailable.</p></details>
+  if (!available) return <details className="brief-unavailable"><summary>Operations Brief · Unavailable</summary><p>Only calculated results are sent to the AI provider. Your CSV files stay in your browser. The optional brief is currently unavailable.</p></details>
   return <section className="brief" aria-label="Operations Brief">
     <div className="brief-control"><div><strong>Operations Brief <span className="muted">· AI summary</span></strong>
-      <p className="muted">Only a compact computed summary is sent to the AI provider when you click Generate Operations Brief. Raw CSV files and rows stay in your browser.</p></div>
+      <p className="muted">Only calculated results are sent to the AI provider. Your CSV files stay in your browser.</p></div>
       {available ? <button onClick={() => void generate()} disabled={state.status === 'loading'}>{state.status === 'loading' ? 'Generating brief…' : 'Generate Operations Brief'}</button> : <span className="muted">Brief unavailable</span>}
     </div>
     <div role="status">{state.status === 'loading' && <p>Writing brief…</p>}{state.status === 'error' && <p className="negative">{state.message}</p>}</div>
-    {state.brief && <div className="brief-output"><p className="muted">AI narration · review alongside the action queue.</p>{BRIEF_SECTIONS.map((heading, i) => <section key={heading}><h3>{i + 1}. {heading}</h3><p>{state.brief![heading]}</p></section>)}</div>}
+    {state.brief && <div className="brief-output">{BRIEF_SECTIONS.map((heading, i) => <section key={heading}><h3>{i + 1}. {heading}</h3><p>{state.brief![heading]}</p></section>)}</div>}
   </section>
 }

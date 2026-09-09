@@ -1,4 +1,4 @@
-# Freight Marketplace Fulfillment & Capacity Intelligence
+# Freight Fulfillment Intelligence
 
 A freight marketplace can have enough physical trucks and still struggle to fulfill demand. Carrier rates, acceptance, service reliability and concentration all affect how much capacity is realistically usable.
 
@@ -67,7 +67,7 @@ Validation captures a fixed analysis timestamp. Uploaded dates are never shifted
 
 CSV parsing, validation, analytics and scenarios run in the browser. Files are not uploaded or stored. There is no database, localStorage, IndexedDB, cookie or account system. Uploaded and sample data never mix.
 
-**Generate Operations Brief** is optional. Only an explicit click sends a compact computed summary to `/api/operations-brief`, which passes it to the configured AI provider. The summary includes headline KPIs and at most five items per action, risk, demand-spike, concentration and supply-priority list. It can contain lane/equipment labels and recommendation text, but never raw CSV contents, complete source records, benchmark offer rows or individual capacity blocks.
+**Generate Operations Brief** is optional. Only calculated results are sent to the AI provider. Your CSV files stay in your browser. An explicit click sends the allowlisted summary to `/api/operations-brief`. The summary includes headline KPIs and at most five items per action, risk, demand-spike, concentration and supply-priority list. It can contain lane/equipment labels and recommendation text, but never raw CSV contents, complete source records, benchmark offer rows or individual capacity blocks.
 
 An allowlisted payload builder selects every field explicitly. The endpoint rejects unknown fields, raw dataset shapes, oversized bodies and excessive arrays. A status-only GET checks availability without transmitting analysis. Credentials stay on the server. Responses are not cached, and application code does not log or persist operational context or briefs. The chosen provider's data-handling policy still applies to the summary it receives.
 

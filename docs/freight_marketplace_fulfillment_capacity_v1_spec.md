@@ -1,8 +1,8 @@
-# Freight Marketplace Fulfillment & Capacity Intelligence — v1 Build Specification
+# Freight Fulfillment Intelligence — v1 Build Specification
 
 ## 0. Mission & how to use this document
 
-You are building a single, self-contained web application called **Freight Marketplace Fulfillment & Capacity Intelligence**.
+You are building a single, self-contained web application called **Freight Fulfillment Intelligence**.
 
 The application is a portfolio MVP for a digital freight marketplace operations team. It analyzes upcoming shipper demand, declared/estimated carrier capacity, historical marketplace execution, and historical carrier-rate offers to answer one operating question:
 
@@ -20,7 +20,7 @@ Do not add functionality merely because it appears useful. V1 is intentionally c
 
 ## 1. Product positioning
 
-**Product name:** Freight Marketplace Fulfillment & Capacity Intelligence
+**Product name:** Freight Fulfillment Intelligence
 
 **Subtitle:** Anticipates fulfillment risk across upcoming freight demand and recommends capacity, pricing and carrier actions while protecting service and commercial economics.
 
@@ -1573,7 +1573,7 @@ The new app should feel more like a live decision console than a static analytic
 
 Show:
 
-**Freight Marketplace Fulfillment & Capacity Intelligence**
+**Freight Fulfillment Intelligence**
 
 Subtitle:
 

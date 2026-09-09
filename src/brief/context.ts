@@ -13,19 +13,20 @@ export interface BriefContext {
   concentration_warnings: { lane: string; equipment: string; pickup_date: string; largest_carrier_share: string; capacity_status: string }[];
   supply_priorities: { lane: string; equipment: string; upcoming_exposure: string; historical_unfulfilled: string; gap_days: string; priority_score: string }[];
 }
+const quantity = (value: number | null | undefined) => number(value, value != null && Number.isInteger(value) ? 0 : 1)
 export function buildBriefContext(analysis: Analysis, asOf: string, currency: string, labels: DisplayLabels = emptyDisplayLabels()): BriefContext {
   const k = analysis.kpis
   return {
     as_of: asOf, currency,
-    kpis: { upcoming_loads: number(k.upcoming_loads), projected_fulfillment: percent(k.projected_fulfillment_pct), effective_coverage: coverage(k.effective_capacity_coverage),
-      unfulfilled_load_equivalents: number(k.expected_unfulfilled), modeled_revenue_exposure: money(k.modeled_revenue_exposure, currency), gross_take_rate_proxy: percent(k.gross_take_rate_proxy), high_critical_buckets: number(k.high_critical_buckets, 0), action_count: number(k.action_count, 0) },
+    kpis: { upcoming_loads: quantity(k.upcoming_loads), projected_fulfillment: percent(k.projected_fulfillment_pct), effective_coverage: coverage(k.effective_capacity_coverage),
+      unfulfilled_load_equivalents: quantity(k.expected_unfulfilled), modeled_revenue_exposure: money(k.modeled_revenue_exposure, currency), gross_take_rate_proxy: percent(k.gross_take_rate_proxy), high_critical_buckets: number(k.high_critical_buckets, 0), action_count: number(k.action_count, 0) },
     top_actions: analysis.actions.slice(0, 5).map(a => ({ action: label(a.action_type), severity: a.severity, lane: displayLane(labels, a.lane), equipment: displayEquipment(labels, a.equipment_type), pickup_date: a.pickup_date,
-      root_cause: label(a.root_cause), loads_exposed: number(a.loads_exposed), modeled_revenue_exposure: money(a.modeled_revenue_exposure, currency), priority: number(a.action_priority_score), recommendation: a.recommended_action, evidence: a.evidence.slice(0, 6) })),
-    at_risk_buckets: analysis.buckets.filter(b => b.expected_unfulfilled > 0).sort((a, b) => b.risk.score - a.risk.score).slice(0, 5).map(b => ({ lane: displayLane(labels, b.lane), equipment: displayEquipment(labels, b.equipment_type), pickup_date: b.pickup_date, root_cause: label(b.root_cause.primary), risk: b.risk.band, effective_coverage: coverage(b.effective_capacity_coverage), unfulfilled_load_equivalents: number(b.expected_unfulfilled) })),
+      root_cause: label(a.root_cause), loads_exposed: quantity(a.loads_exposed), modeled_revenue_exposure: money(a.modeled_revenue_exposure, currency), priority: number(a.action_priority_score), recommendation: a.recommended_action, evidence: a.evidence.slice(0, 6) })),
+    at_risk_buckets: analysis.buckets.filter(b => b.expected_unfulfilled > 0).sort((a, b) => b.risk.score - a.risk.score).slice(0, 5).map(b => ({ lane: displayLane(labels, b.lane), equipment: displayEquipment(labels, b.equipment_type), pickup_date: b.pickup_date, root_cause: label(b.root_cause.primary), risk: b.risk.band, effective_coverage: coverage(b.effective_capacity_coverage), unfulfilled_load_equivalents: quantity(b.expected_unfulfilled) })),
     demand_spikes: [...new Map(analysis.buckets.filter(b => b.baseline.demand_growth_pct !== null && b.baseline.demand_growth_pct >= DEFAULT_CONFIG.DEMAND_SPIKE_THRESHOLD).map(b => [JSON.stringify([b.lane, b.equipment_type]), b])).values()]
-      .sort((a, b) => b.baseline.demand_growth_pct! - a.baseline.demand_growth_pct!).slice(0, 5).map(b => ({ lane: displayLane(labels, b.lane), equipment: displayEquipment(labels, b.equipment_type), growth: percent(b.baseline.demand_growth_pct), weekly_demand: number(b.baseline.upcoming_7d_loads) })),
+      .sort((a, b) => b.baseline.demand_growth_pct! - a.baseline.demand_growth_pct!).slice(0, 5).map(b => ({ lane: displayLane(labels, b.lane), equipment: displayEquipment(labels, b.equipment_type), growth: percent(b.baseline.demand_growth_pct), weekly_demand: quantity(b.baseline.upcoming_7d_loads) })),
     concentration_warnings: analysis.buckets.filter(b => ['Watch', 'High'].includes(b.concentration_status)).sort((a, b) => b.capacity.top_carrier_share - a.capacity.top_carrier_share).slice(0, 5).map(b => ({ lane: displayLane(labels, b.lane), equipment: displayEquipment(labels, b.equipment_type), pickup_date: b.pickup_date, largest_carrier_share: percent(b.capacity.top_carrier_share), capacity_status: b.status })),
-    supply_priorities: analysis.supply_gaps.slice(0, 5).map(g => ({ lane: displayLane(labels, g.lane), equipment: displayEquipment(labels, g.equipment_type), upcoming_exposure: number(g.upcoming_expected_unfulfilled_7d), historical_unfulfilled: number(g.historical_unfulfilled_30d, 0), gap_days: number(g.gap_days_30d, 0), priority_score: number(g.structural_supply_gap_score, 0) })),
+    supply_priorities: analysis.supply_gaps.slice(0, 5).map(g => ({ lane: displayLane(labels, g.lane), equipment: displayEquipment(labels, g.equipment_type), upcoming_exposure: quantity(g.upcoming_expected_unfulfilled_7d), historical_unfulfilled: number(g.historical_unfulfilled_30d, 0), gap_days: number(g.gap_days_30d, 0), priority_score: number(g.structural_supply_gap_score, 0) })),
   }
 }
 

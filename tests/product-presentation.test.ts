@@ -23,12 +23,14 @@ it('shows recommendations before detailed capacity, preserving exact decision te
 })
 it('keeps sample as startup mode with compact source controls and no development labels', () => {
   const html = renderToStaticMarkup(createElement(App))
+  expect(html).toContain('Freight Fulfillment Intelligence'); expect(html).not.toContain('Freight Marketplace Fulfillment')
   expect(html).toContain('Sample data'); expect(html).toContain('Upload data'); expect(html).toContain('Reset to sample data')
   expect(html).not.toMatch(/Phase [234]/)
   const analysis = analyze(fixture(), AS_OF)
   const queue = renderToStaticMarkup(createElement(OperationsQueue, { analysis, asOf: AS_OF, currency: 'SAR', onAction: () => {}, onBucket: () => {} }))
   expect(queue).toContain('98.0%'); expect(queue).toContain('Prioritized action queue')
-  expect(queue).toContain('Raw CSV files and rows stay in your browser.')
+  expect(queue).toContain('Only calculated results are sent to the AI provider. Your CSV files stay in your browser.')
+  expect(queue).not.toContain('Only a compact computed summary')
 })
 it('groups related actions once per bucket in engine order without summing overlapping exposure', async () => {
   const { generateSynthetic } = await import('../src/data/synthetic')
@@ -67,6 +69,7 @@ it('uses the commercial trade-off label across action displays while preserving 
   const analysis = analyze(generateSynthetic(), AS_OF), before = structuredClone(analysis)
   const action = analysis.actions.find(a => a.action_type === 'ESCALATE_COMMERCIAL_CONSTRAINT')!
   expect(label(action.action_type)).toBe('Review commercial trade-off')
+  expect(label('PREBOOK_CAPACITY')).toBe('Pre-book capacity')
   const views = [
     createElement(OperationsQueue, { analysis, asOf: AS_OF, currency: 'SAR', onAction: () => {}, onBucket: () => {} }),
     createElement(NeedsAttention, { analysis, onAction: () => {} }),

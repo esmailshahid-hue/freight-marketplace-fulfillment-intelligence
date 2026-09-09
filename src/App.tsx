@@ -84,7 +84,7 @@ export default function App() {
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="app-header">
-      <h1>Freight Marketplace Fulfillment &amp; Capacity Intelligence</h1>
+      <h1>Freight Fulfillment Intelligence</h1>
       <p>Find fulfillment gaps. Review capacity, pricing and carrier actions.</p>
     <div className="source-controls"><div className="mode-selector" role="group" aria-label="Data source">
       <>
