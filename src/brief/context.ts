@@ -1,7 +1,7 @@
-import { displayLane, displayEquipment, emptyDisplayLabels, type DisplayLabels } from '../data/displayLabels.ts'
-import type { Analysis } from '../analytics/engine.ts'
-import { DEFAULT_CONFIG } from '../analytics/config.ts'
-import { coverage, label, money, number, percent } from '../ui/format.ts'
+import { displayLane, displayEquipment, emptyDisplayLabels, type DisplayLabels } from '../data/displayLabels.js'
+import type { Analysis } from '../analytics/engine.js'
+import { DEFAULT_CONFIG } from '../analytics/config.js'
+import { coverage, label, money, number, percent } from '../ui/format.js'
 
 // This is a separate, deliberately small transport contract, never an Analysis or Dataset.
 export interface BriefContext {

@@ -1,4 +1,4 @@
-import { normalizeKey, normalizeLane } from './mapping.ts'
+import { normalizeKey, normalizeLane } from './mapping.js'
 export interface DisplayLabels { lanes: Record<string, string>; equipment: Record<string, string> }
 export const emptyDisplayLabels = (): DisplayLabels => ({ lanes: Object.create(null), equipment: Object.create(null) })
 export function rememberDisplayLabels(labels: DisplayLabels, lane: string, equipment: string) {

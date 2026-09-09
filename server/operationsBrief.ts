@@ -1,4 +1,4 @@
-import { isBriefContext, isOperationsBrief, type BriefContext, type OperationsBrief } from '../src/brief/context.ts'
+import { isBriefContext, isOperationsBrief, type BriefContext, type OperationsBrief } from '../src/brief/context.js'
 
 export interface BriefEnvironment { ANALYSIS_LLM_API_KEY?: string; ANALYSIS_LLM_MODEL?: string; ANALYSIS_LLM_BASE_URL?: string }
 const MAX_BYTES = 64 * 1024

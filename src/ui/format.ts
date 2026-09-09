@@ -1,4 +1,4 @@
-export { money, suggestedRate, moneyChange, moneyDigits } from '../utils/money.ts'
+export { money, suggestedRate, moneyChange, moneyDigits } from '../utils/money.js'
 // Presentation only: do not round inputs passed to the analytics engine.
 export const UNAVAILABLE = 'Unavailable'
 const usable = (value: number | null | undefined): value is number => value != null && Number.isFinite(value)

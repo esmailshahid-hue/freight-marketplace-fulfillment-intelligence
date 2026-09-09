@@ -1,2 +1,2 @@
-import { handleOperationsBrief } from '../server/operationsBrief.ts'
+import { handleOperationsBrief } from '../server/operationsBrief.js'
 export default { fetch: (request: Request) => handleOperationsBrief(request) }
