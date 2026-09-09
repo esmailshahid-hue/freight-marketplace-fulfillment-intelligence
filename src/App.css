@@ -266,3 +266,75 @@ footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border
 .opportunity-list article { grid-template-columns: 1.1fr 1fr .8fr .8fr auto; }
 @media (max-width: 1100px) { .opportunity-list article { grid-template-columns: 1fr 1fr; } .opportunity-list article > div:first-child { grid-column: 1 / -1; } }
 .pricing-scenario-detail { min-width: 230px; max-width: 360px; }
+
+/* Mobile and small-tablet refinements; desktop keeps its existing layout. */
+@media (max-width: 800px) {
+  .app-shell button, .app-shell select, .app-shell summary { min-height: 44px; }
+  .app-shell button { min-width: 44px; }
+  .app-shell summary { padding-block: 11px; }
+  .app-shell select { font-size: 16px; }
+  .app-shell a.text-button { display: inline-flex; align-items: center; min-height: 44px; }
+  .how-it-works li p { max-width: none; font-size: 12px; }
+  .how-it-works strong, .how-it-works li::before { font-size: 12px; }
+  .how-it-works li { align-content: start; }
+  .section-heading { gap: 8px 16px; margin-bottom: 12px; }
+  .section-heading .section-intro { margin-bottom: 0; }
+  .secondary-stat { white-space: normal; margin: 0; }
+  .kpi { display: flex; flex-direction: column; border-right: 0; }
+  .kpi:nth-child(even) { border-right: 1px solid var(--border); }
+  .kpi:nth-last-child(-n + 2) { border-bottom: 0; }
+  .kpi dt { margin-bottom: 8px; }
+  .kpi dd { margin-top: auto; }
+  .kpi:nth-child(4) dd { padding-top: 0; }
+  .attention-grid, .supply-leaders { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .attention-card, .supply-leaders article, .scenario-comparison article { padding: 16px; }
+  .attention-card, .supply-leaders article, .opportunity-list article > div,
+  .drawer-header > div, .brief-control > div { min-width: 0; overflow-wrap: anywhere; }
+  .exposure-line { flex-wrap: wrap; }
+  .group-actions button { gap: 12px; }
+  .group-actions button > span { flex-shrink: 0; }
+  .secondary-panels { gap: 16px; }
+  .secondary-panels .panel { margin: 0; }
+  .count { align-self: flex-start; flex-shrink: 0; white-space: nowrap; }
+  .opportunity-list article { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px; gap: 12px; }
+  .opportunity-list article > div:nth-child(2) { grid-column: 1 / -1; }
+  .opportunity-list article > button { grid-column: 1 / -1; }
+  .lane, .lane-title, .summary-list button { overflow-wrap: anywhere; }
+  .opportunity-list .lane { max-width: none; }
+  .filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filters label { min-width: 0; max-width: none; }
+  .table-scroll { min-width: 0; overscroll-behavior-x: contain; }
+  .table-scroll th, .table-scroll td { overflow-wrap: normal; }
+  .mapping-panel table, .drawer table { min-width: 700px; }
+  .validation-results table { min-width: 600px; }
+  .comparison-detail table { min-width: 640px; }
+  .drawer { overscroll-behavior: contain; }
+  .drawer-header button { flex-shrink: 0; }
+  .drawer-content { overflow-wrap: anywhere; }
+  .drawer .rate-scenario { padding: 14px; }
+  .slider input { height: 44px; margin-top: 3px; }
+  .checkbox { min-height: 44px; }
+  .checkbox input { flex-shrink: 0; }
+  .comparison-values { gap: 12px; }
+  .comparison-values > span, .comparison-values > strong { min-width: 0; overflow-wrap: anywhere; }
+  .brief-control p, .brief-unavailable { font-size: 12px; }
+  .brief-output { padding: 16px; overflow-wrap: anywhere; }
+  .upload-files input::file-selector-button { min-height: 44px; }
+  .upload-files legend { max-width: 100%; }
+  .validation-results, .data-status, .data-context, #validation-heading ~ p { overflow-wrap: anywhere; }
+}
+@media (max-width: 430px) {
+  .kpi-grid { grid-template-columns: minmax(0, 1fr); }
+  .kpi:nth-child(n) { border-right: 0; border-bottom: 1px solid var(--border); }
+  .kpi:last-child { border-bottom: 0; }
+  .filters { grid-template-columns: minmax(0, 1fr); }
+  .drawer .detail-grid { grid-template-columns: minmax(0, 1fr); }
+  .drawer-header { flex-wrap: wrap; gap: 12px; }
+  .drawer-header > div { flex: 1 1 180px; }
+  .drawer-header button { margin-left: auto; }
+  .workflow-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workflow-steps li { padding: 10px 12px; }
+  .workflow-steps li:nth-child(2) { border-right: 0; }
+  .workflow-steps li:nth-child(-n + 2) { border-bottom: 1px solid var(--border); }
+  .brief-control button { width: 100%; }
+}
