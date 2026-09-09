@@ -2,7 +2,7 @@
 
 Phase 1 implements the deterministic business logic described in [the product specification](docs/freight_marketplace_fulfillment_capacity_v1_spec.md). It answers whether upcoming freight demand has enough qualified physical capacity and enough modeled effective capacity, and identifies operational actions when it does not.
 
-This is a synthetic portfolio prototype, not production-ready software. The React/Vite starter screen is intentionally unchanged. There is no dashboard, charting, authentication, database, external API, AI/LLM integration, tracking, routing, dispatch, OCR, TMS integration, or machine-learning model. The specification's later UI, export, and optional narration phases are not implemented or configured in this phase.
+Phase 2A adds a minimal functional browser UI over that stable foundation. This is a synthetic portfolio prototype, not production-ready software. The application has five table-based tabs, a shared bucket drilldown and scenario controls. There is no charting, authentication, database, external API, AI/LLM integration, tracking, routing, dispatch, OCR, TMS integration, or machine-learning model. Uploads, mapping UI, exports and final visual polish remain outside this phase.
 
 ## Run and verify
 
@@ -16,10 +16,31 @@ npm run typecheck        # includes scripts and tests
 npm run lint
 npm run build            # TypeScript plus Vite production build
 npm run verify:scenarios # asserts planted scenarios, then prints actual metrics
-npm run dev              # existing starter only; no analytical UI yet
+npm run dev              # open the local URL printed by Vite
 ```
 
 No credentials or environment secrets are required. The sample generator only writes `public/sample-data/`. Analytics perform no I/O and have no global mutable state.
+
+## Phase 2A browser workflow
+
+On startup, `App.tsx` captures one analysis timestamp and calls the existing `fetchSample()` utility. It fetches local sample metadata and all five CSV assets, validates them, shifts sample dates and validates the shifted result. Only validated data reaches `analyze()`. A failed request or blocking validation error shows a visible error and Retry button. Existing validation warnings remain available in Data status. No uploaded data, network service or persistent storage is involved.
+
+All baseline tabs use the same seven-day `Analysis` object and fixed analysis timestamp. This Phase 2A scope uses six Operations KPIs and a seven-day baseline, rather than the later specification's five-KPI/72-hour queue layout. Scenario Lab is explicitly separate: it calls `runScenario()` with percent controls converted to decimal arguments and the three supported threshold overrides. It does not replace scenario calculations with UI arithmetic. Tab switching preserves current controls; resetting restores the engine defaults and disables the lane override. Refreshing starts a new sample snapshot and clears all UI state.
+
+| Browser view | Existing output used |
+| --- | --- |
+| Operations Queue | `analysis.kpis`, priority-ordered `analysis.actions`, bucket demand baselines and concentration fields |
+| Capacity & Fulfillment | `analysis.buckets`; lane/equipment/date/status filters select visible rows without recomputing analytics |
+| Pricing & Economics | Bucket economics, benchmark provenance/confidence, rate index, modeled acceptance and `rate_search.recommendation` |
+| Supply Gaps | `analysis.supply_gaps` in existing rank order, including all score components and explanation text |
+| Scenario Lab | `runScenario().baseline`, `.scenario`, and all four `.deltas` categories |
+| Shared drilldown | Selected bucket's risk reason, root causes, warnings, `capacity.carriers`, individual `capacity.contributions`, rate recommendation and existing actions/evidence |
+
+Scenario action drilldowns retain their context: new/changed actions open scenario buckets, while resolved actions open the original baseline bucket. This avoids presenting a resolved issue as current. The original analytics, decision rules, thresholds, scenario engine, generator, committed samples and planted-scenario tests were unchanged in Phase 2A; no analytics wiring defect was discovered.
+
+UI files are `src/App.tsx`, `src/pages/*.tsx`, `src/components/*.tsx`, `src/ui/{format,selectors,scenarioControls}.ts`, `src/App.css`, `src/index.css`, and the page title in `index.html`. Helper tests are in `tests/ui-helpers.test.ts`. Tables use native buttons for keyboard access, tabs support arrow/Home/End navigation, and the native modal handles focus containment, Escape and focus return.
+
+Browser validation covers automatic sample loading and KPI equality with the engine, all five tabs, capacity filtering and empty results, carrier aggregation (five carriers/six blocks), pricing expansion, supply-gap ordering, global and lane-specific scenario changes, threshold changes/excluded blocks, all four action-delta categories, baseline-vs-scenario drilldown context, reset, and failed-file Retry recovery. No charting or UI dependencies were added.
 
 ## Modules and entrypoints
 
@@ -117,4 +138,4 @@ The carrier-level concentration correction below supersedes the original row-lev
 
 Effective capacity is a planning model, not live availability. Capacity blocks assume no double counting or dynamic truck reuse across lanes. Rate-band relationships are empirical, not causal or ML, and need not be monotonic. There is no route feasibility, driver-hours, border/customs execution, payment execution, or live carrier integration. Supply-gap priority is a ranking heuristic, not a financial forecast.
 
-CSV ingestion is browser-compatible and memory-only. The optional static sample loader reads local public assets; no operational data is sent to external services. There is no persistence, storage API, localStorage, cookie, or narration endpoint. The later polished application remains a separate implementation phase.
+CSV ingestion is browser-compatible and memory-only. The optional static sample loader reads local public assets; no operational data is sent to external services. There is no persistence, storage API, localStorage, cookie, or narration endpoint. The final polished application remains a separate implementation phase.
