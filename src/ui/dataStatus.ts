@@ -6,3 +6,9 @@ export function dataStatusIssues(issues: DataIssue[], source: 'sample' | 'upload
   return { notes, warnings: issues.filter(issue => !notes.includes(issue)) }
 }
 
+
+export const isTemporalWarning = (issue: DataIssue) => (issue.dataset === 'upcoming' && issue.message.startsWith('Past Due:'))
+  || (['historical', 'offers'].includes(issue.dataset) && issue.message.startsWith('Future historical row excluded:'))
+export function warningGroups(issues: DataIssue[]) {
+  return { temporal: issues.filter(isTemporalWarning), warnings: issues.filter(issue => !isTemporalWarning(issue)) }
+}

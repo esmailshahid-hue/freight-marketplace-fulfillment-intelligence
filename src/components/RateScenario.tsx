@@ -1,19 +1,21 @@
 import type { PlanningBucket } from '../analytics/types'
+import { rateOpportunity } from '../ui/ratePresentation'
 import { coverage, money, percent, suggestedRate } from '../ui/format'
 export function RateScenario({ bucket: b }: { bucket: PlanningBucket }) {
-  const recommendation = b.rate_search?.recommendation
+  const recommendation = rateOpportunity(b)
+  const constrained = !b.rate_search?.recommendation && !!recommendation
   if (!recommendation) return <p>No modeled rate recommendation.</p>
   return <section className="rate-scenario" aria-label="Modeled rate scenario">
-    <h3>Modeled rate scenario</h3>
+    <h3>Modeled rate scenario</h3>{constrained && <p className="negative">Below commercial floor · For trade-off review, not a rate recommendation.</p>}
     <p className="rate-journey"><span>{money(b.current_buy_rate, b.currency)}<small>Current rate</small></span><span aria-hidden="true">→</span><span>{suggestedRate(recommendation.buy_rate, b.currency)}<small>Modeled rate · +{percent(recommendation.increase)}</small></span></p>
-    <dl className="detail-grid">
+    <details><summary>Underlying model values</summary><dl className="detail-grid">
       <div><dt>Current carrier buy rate</dt><dd>{money(b.current_buy_rate, b.currency)}</dd></div>
-      <div><dt>Modeled rate before display rounding</dt><dd>{money(recommendation.buy_rate, b.currency)}</dd></div>
+      <div><dt>Modeled rate before display rounding</dt><dd>{money(recommendation.buy_rate, b.currency, 2)}</dd></div>
       <div><dt>Modeled acceptance · before → after</dt><dd>{percent(b.capacity.weighted_acceptance)} → {percent(recommendation.acceptance)}</dd></div>
       <div><dt>Effective coverage · before → after</dt><dd>{coverage(b.effective_capacity_coverage)} → {coverage(recommendation.coverage)}</dd></div>
       <div><dt>Gross take-rate proxy · before → after</dt><dd>{percent(b.gross_take_rate_proxy)} → {percent(recommendation.gross_take_rate_proxy)}</dd></div>
       <div><dt>Commercial floor</dt><dd>{percent(b.rate_search!.commercial_floor)}</dd></div>
-    </dl>
+    </dl></details>
     <p className="muted">Historical acceptance estimate. Operator approval required.</p>
   </section>
 }

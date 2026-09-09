@@ -18,7 +18,7 @@ it('shows recommendations before detailed capacity, preserving exact decision te
   const analysis = analyze(fixture(), AS_OF)
   const html = renderToStaticMarkup(createElement(BucketDrawer, { selection: { bucket: analysis.buckets[0], actions: analysis.actions, context: 'Baseline' }, onClose: () => {} }))
   expect(html.indexOf('Recommended actions')).toBeLessThan(html.indexOf('Capacity &amp; commercial metrics'))
-  for (const name of ['Decision summary', 'Why this bucket is at risk', 'Carrier-level capacity', 'Individual capacity blocks', 'Warnings &amp; model provenance']) expect(html).toContain(name)
+  for (const name of ['Decision summary', 'Bucket details', 'Carrier-level capacity', 'Individual capacity blocks', 'Warnings &amp; model provenance']) expect(html).toContain(name)
   expect(html).toContain(analysis.actions[0].recommended_action)
 })
 it('keeps sample as startup mode with compact source controls and no development labels', () => {

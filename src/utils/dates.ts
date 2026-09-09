@@ -1,8 +1,19 @@
 export const DAY = 86_400_000
 // Explicit timezone makes analytics independent of the host/browser timezone.
 export const DEFAULT_TIME_ZONE = 'Asia/Riyadh'
+const dateFormatters = new Map<string, Intl.DateTimeFormat>()
+const offsetFormatters = new Map<string, Intl.DateTimeFormat>()
+function formatter(cache: Map<string, Intl.DateTimeFormat>, timeZone: string, locale: string, options: Intl.DateTimeFormatOptions) {
+  let value = cache.get(timeZone)
+  if (!value) {
+    value = new Intl.DateTimeFormat(locale, { timeZone, ...options })
+    if (cache.size >= 16) cache.delete(cache.keys().next().value!)
+    cache.set(timeZone, value)
+  }
+  return value
+}
 export function localDate(value: string | number, timeZone = DEFAULT_TIME_ZONE): string {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(typeof value === 'string' ? timestamp(value, timeZone) : value))
+  const parts = formatter(dateFormatters, timeZone, 'en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(typeof value === 'string' ? timestamp(value, timeZone) : value))
   const get = (type: string) => parts.find(p => p.type === type)!.value
   return `${get('year')}-${get('month')}-${get('day')}`
 }
@@ -26,7 +37,7 @@ export function timestamp(value: string, timeZone = DEFAULT_TIME_ZONE): number {
   if (!Number.isFinite(nominal)) return NaN
   let instant = nominal
   for (let i = 0; i < 3; i++) {
-    const name = new Intl.DateTimeFormat('en', { timeZone, timeZoneName: 'shortOffset' }).formatToParts(instant).find(p => p.type === 'timeZoneName')!.value
+    const name = formatter(offsetFormatters, timeZone, 'en', { timeZoneName: 'shortOffset' }).formatToParts(instant).find(p => p.type === 'timeZoneName')!.value
     const match = name.match(/^GMT([+-])(\d{1,2})(?::(\d{2}))?$/)
     const minutes = match ? (match[1] === '+' ? 1 : -1) * (+match[2] * 60 + +(match[3] ?? 0)) : 0
     const next = nominal - minutes * 60_000

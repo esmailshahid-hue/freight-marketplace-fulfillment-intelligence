@@ -50,7 +50,7 @@ td.numeric { white-space: nowrap; font-weight: 550; }
 .selectable:focus-within { background: #edf4f5; }
 .text-button { background: transparent; border: none; padding: 0; min-height: 0; color: #1c6172; text-align: left; text-decoration: none; line-height: 1.5; font-weight: 600; }
 .text-button:hover:not(:disabled) { color: #123e48; background: transparent; text-decoration: underline; text-underline-offset: 3px; }
-.lane { display: inline-block; min-width: 145px; max-width: 215px; text-transform: capitalize; font-weight: 550; }
+.lane { display: inline-block; min-width: 145px; max-width: 215px; font-weight: 550; }
 .action-name { min-width: 145px; max-width: 180px; }
 .action-reason { min-width: 185px; max-width: 220px; }
 .action-reason strong { font-weight: 500; }
@@ -89,7 +89,6 @@ td.numeric { white-space: nowrap; font-weight: 550; }
 .drawer::backdrop { background: rgb(21 33 47 / 45%); }
 .drawer-content { padding: 24px; }
 .drawer-header { display: flex; align-items: start; justify-content: space-between; gap: 18px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-.drawer-header h2 { text-transform: capitalize; }
 .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin-bottom: 8px; }
 .drawer section, .drawer-section { margin-top: 22px; }
 .drawer-section { border-top: 1px solid var(--border); padding-top: 14px; }
@@ -190,7 +189,7 @@ footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border
 .attention-card:first-child { background: #fffdfb; }
 .attention-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .rank-label { font-variant-numeric: tabular-nums; color: #677b8a; font-size: 14px; font-weight: 650; }
-.lane-title { text-transform: capitalize; font-size: 16px; margin: 0 0 4px; }
+.lane-title { font-size: 16px; margin: 0 0 4px; }
 .attention-card > .muted { font-size: 11px; margin: 0 0 14px; }
 .problem-label { font-weight: 600; color: #824833; font-size: 12px; margin: 0 0 10px; }
 .exposure-line { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-variant-numeric: tabular-nums; }
@@ -258,3 +257,4 @@ footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border
 .risk-label { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); }
 .opportunity-list article { grid-template-columns: 1.1fr 1fr .8fr .8fr auto; }
 @media (max-width: 1100px) { .opportunity-list article { grid-template-columns: 1fr 1fr; } .opportunity-list article > div:first-child { grid-column: 1 / -1; } }
+.pricing-scenario-detail { min-width: 230px; max-width: 360px; }

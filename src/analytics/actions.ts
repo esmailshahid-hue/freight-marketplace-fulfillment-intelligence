@@ -1,14 +1,20 @@
+import { money, suggestedRate } from '../utils/money'
 import type { CarrierPayment } from '../data/schemas'
 import type { Action, ActionType, PlanningBucket } from './types'
 import { DEFAULT_CONFIG, type Config } from './config'
 import { key, normalize, clamp } from '../utils/math'
 import { riskBand } from './risk'
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`
+const ROOT_ACTION: Partial<Record<NonNullable<Action['root_cause']>, ActionType>> = {
+  PRICE_COMPETITIVENESS: 'RAISE_BUY_RATE', SUPPLY_SHORTAGE: 'SECURE_CAPACITY',
+  COMMERCIAL_CONSTRAINT: 'ESCALATE_COMMERCIAL_CONSTRAINT', SERVICE_QUALITY: 'REVIEW_SERVICE_QUALITY',
+}
+const rootActionRank = (action: Action) => action.root_cause && ROOT_ACTION[action.root_cause] === action.action_type ? 0 : 1
 export function prioritizeActions(actions: Action[], config: Config = DEFAULT_CONFIG): Action[] {
   return actions.map(a => {
     const score = clamp(.40 * normalize(a.loads_exposed, actions.map(x => x.loads_exposed)) + .25 * a.pickup_urgency + .20 * normalize(a.modeled_revenue_exposure, actions.map(x => x.modeled_revenue_exposure)) + .15 * a.risk_score, 0, 100)
     return { ...a, action_priority_score: score, severity: riskBand(score, config) }
-  }).sort((a, b) => b.action_priority_score - a.action_priority_score || a.action_id.localeCompare(b.action_id))
+  }).sort((a, b) => b.action_priority_score - a.action_priority_score || rootActionRank(a) - rootActionRank(b) || a.action_id.localeCompare(b.action_id))
 }
 export function generateActions(buckets: PlanningBucket[], payments?: CarrierPayment[], config: Config = DEFAULT_CONFIG) {
   const actions: Action[] = [], prebooked = new Set<string>()
@@ -25,7 +31,7 @@ export function generateActions(buckets: PlanningBucket[], payments?: CarrierPay
     const rec = b.rate_search?.recommendation
     // Commercial root-cause prohibition is explicit in planted scenario C.
     if (b.effective_capacity_coverage < 1 && b.raw_capacity_coverage >= 1 && b.root_cause.primary !== 'COMMERCIAL_CONSTRAINT' && rec && (rec.coverage >= 1 || rec.coverage - b.effective_capacity_coverage >= config.MIN_MATERIAL_COVERAGE_IMPROVEMENT))
-      add('RAISE_BUY_RATE', `Model a carrier buy-rate increase from ${b.currency} ${b.current_buy_rate.toFixed(0)} to approximately ${b.currency} ${Math.round(rec.buy_rate / 25) * 25}. Historical rate/acceptance behavior suggests modeled acceptance could move from ${pct(b.capacity.weighted_acceptance)} to ${pct(rec.acceptance)}, improving effective capacity coverage from ${pct(b.effective_capacity_coverage)} to ${pct(rec.coverage)} while keeping the gross take-rate proxy above the configured floor.`, [`Candidate gross take-rate proxy ${pct(rec.gross_take_rate_proxy)}`, `Commercial floor ${pct(config.COMMERCIAL_FLOOR)}`])
+      add('RAISE_BUY_RATE', `Model a carrier buy-rate increase from ${money(b.current_buy_rate, b.currency)} to ${suggestedRate(rec.buy_rate, b.currency).replace(/^Approximately/, 'approximately')}. Historical rate/acceptance behavior suggests modeled acceptance could move from ${pct(b.capacity.weighted_acceptance)} to ${pct(rec.acceptance)}, improving effective capacity coverage from ${pct(b.effective_capacity_coverage)} to ${pct(rec.coverage)} while keeping the gross take-rate proxy above the configured floor.`, [`Candidate gross take-rate proxy ${pct(rec.gross_take_rate_proxy)}`, `Commercial floor ${pct(config.COMMERCIAL_FLOOR)}`])
     if (b.raw_capacity_coverage < 1) add('SECURE_CAPACITY', `Secure approximately ${Math.ceil(b.upcoming_loads - b.capacity.raw)} additional qualified trucks for this lane/equipment/date. Current physical capacity covers only ${pct(b.raw_capacity_coverage)} of upcoming demand, so price changes alone cannot close the gap.`)
     if (b.capacity.top_carrier_share >= config.CONCENTRATION_HIGH && b.upcoming_loads >= 5) add('ACTIVATE_BACKUP_CARRIERS', `Activate backup carrier capacity. The largest carrier represents ${pct(b.capacity.top_carrier_share)} of modeled effective capacity for ${b.upcoming_loads} upcoming loads.`, [`Top carrier share ${pct(b.capacity.top_carrier_share)}`])
     if (b.root_cause.primary === 'COMMERCIAL_CONSTRAINT') add('ESCALATE_COMMERCIAL_CONSTRAINT', 'Escalate the commercial trade-off. The rate increase needed to restore modeled coverage would push the gross take-rate proxy below the configured floor. Review shipper pricing, service commitment, or alternate capacity rather than raising carrier rates automatically.')
@@ -38,7 +44,7 @@ export function generateActions(buckets: PlanningBucket[], payments?: CarrierPay
     if (b.effective_capacity_coverage < 1) {
       for (const p of payments ?? []) {
         const share = b.capacity.carriers.find(c => c.carrier_id === p.carrier_id)?.effective_share ?? 0
-        if (p.payment_status === 'Overdue' && p.overdue_payable > 0 && share >= .15) add('REVIEW_PAYMENT_EXPOSURE', `Review payment exposure for Carrier ${p.carrier_id}. It contributes ${pct(share)} of modeled effective capacity on an at-risk lane and currently has ${p.currency} ${p.overdue_payable} overdue. This is an operational relationship flag only; v1 does not assume payment status causes capacity loss.`, [`Carrier share ${pct(share)}`, `Overdue payable ${p.overdue_payable}`], p.carrier_id)
+        if (p.payment_status === 'Overdue' && p.overdue_payable > 0 && share >= .15) add('REVIEW_PAYMENT_EXPOSURE', `Review payment exposure for Carrier ${p.carrier_id}. It contributes ${pct(share)} of modeled effective capacity on an at-risk lane and currently has ${money(p.overdue_payable, p.currency)} overdue. This is an operational relationship flag only; v1 does not assume payment status causes capacity loss.`, [`Carrier share ${pct(share)}`, `Overdue payable ${money(p.overdue_payable, p.currency)}`], p.carrier_id)
       }
     }
   }

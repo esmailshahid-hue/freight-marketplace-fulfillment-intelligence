@@ -1,3 +1,4 @@
+import { DisplayLabelContext } from './ui/displayLabels'
 import { useEffect, useReducer, useState } from 'react'
 import { analyze } from './analytics/engine'
 import type { Action, PlanningBucket } from './analytics/types'
@@ -28,7 +29,7 @@ function Workspace({ snapshot, source }: { snapshot: Snapshot; source: 'sample' 
     if (bucket) setSelection({ bucket, actions: analysis.actions, context: 'Baseline', actionId: action.action_id })
   }
   const activateTab = (next: (typeof TABS)[number]) => { setTab(next); if (next === 'Scenario Lab') setScenarioVisited(true) }
-  return <>
+  return <DisplayLabelContext.Provider value={validation.displayLabels}>
     <div className="data-context"><p><strong>{source === 'sample' ? 'Sample data' : 'Uploaded data'}</strong> · 7-day view · {currency}</p>
       <p>Analysis time: <time dateTime={asOf}>{new Intl.DateTimeFormat('en-GB', { timeZone: DEFAULT_TIME_ZONE, dateStyle: 'medium', timeStyle: 'short' }).format(new Date(asOf))}</time> · {DEFAULT_TIME_ZONE}</p>
     </div>
@@ -46,7 +47,7 @@ function Workspace({ snapshot, source }: { snapshot: Snapshot; source: 'sample' 
       {name === 'Scenario Lab' && scenarioVisited && <ScenarioLab data={data} analysis={analysis} asOf={asOf} currency={currency} onInspect={setSelection} />}
     </div>)}</main>
     {selection && <BucketDrawer selection={selection} onClose={() => setSelection(null)} />}
-  </>
+  </DisplayLabelContext.Provider>
 }
 function SampleWorkspace() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })

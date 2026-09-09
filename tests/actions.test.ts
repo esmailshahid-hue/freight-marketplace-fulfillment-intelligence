@@ -43,3 +43,21 @@ it('prebooks once per pair at exact growth and demand boundaries', () => {
   b.baseline.demand_growth_pct = .24999
   expect(generateActions([b]).some(a => a.action_type === 'PREBOOK_CAPACITY')).toBe(false)
 })
+it.each([
+  ['PRICE_COMPETITIVENESS', 'RAISE_BUY_RATE'], ['SUPPLY_SHORTAGE', 'SECURE_CAPACITY'],
+  ['COMMERCIAL_CONSTRAINT', 'ESCALATE_COMMERCIAL_CONSTRAINT'], ['SERVICE_QUALITY', 'REVIEW_SERVICE_QUALITY'],
+] as const)('breaks score ties with the direct %s action, without changing scores', (root_cause, action_type) => {
+  const base = analyze(fixture(), AS_OF).actions[0]
+  const actions = [
+    { ...base, root_cause, action_type: 'PREBOOK_CAPACITY' as const, action_id: 'a' },
+    { ...base, root_cause, action_type, action_id: 'z' },
+    { ...base, root_cause, action_type: 'REVIEW_PAYMENT_EXPOSURE' as const, action_id: 'b' },
+  ]
+  const result = prioritizeActions(actions)
+  expect(result.map(a => a.action_id)).toEqual(['z', 'a', 'b'])
+  expect(new Set(result.map(a => a.action_priority_score)).size).toBe(1)
+  expect(result[0].action_priority_score).toBe(prioritizeActions(actions.map(a => ({ ...a, root_cause: null })))[0].action_priority_score)
+  expect(prioritizeActions([...actions].reverse())).toEqual(result)
+  actions[0].pickup_urgency += 1
+  expect(prioritizeActions(actions)[0].action_type).toBe('PREBOOK_CAPACITY')
+})

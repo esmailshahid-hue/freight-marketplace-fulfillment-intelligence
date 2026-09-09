@@ -1,3 +1,5 @@
+import { rateOpportunity } from '../ui/ratePresentation'
+import { useDisplayLabels } from '../ui/displayLabels'
 import { useEffect, useRef } from 'react'
 import type { Action, PlanningBucket } from '../analytics/types'
 import { Badge } from './Badge'
@@ -7,6 +9,7 @@ import { actionsForBucket } from '../ui/selectors'
 import { coverage, dateLabel, label, money, number, percent, TAKE_RATE_HELP } from '../ui/format'
 export interface BucketSelection { bucket: PlanningBucket; actions: Action[]; context: 'Baseline' | 'Scenario'; actionId?: string }
 export function BucketDrawer({ selection, onClose }: { selection: BucketSelection; onClose: () => void }) {
+  const { laneLabel, equipmentLabel } = useDisplayLabels()
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     const dialog = ref.current!, previous = document.activeElement as HTMLElement | null
@@ -28,14 +31,14 @@ export function BucketDrawer({ selection, onClose }: { selection: BucketSelectio
   return <dialog className="drawer" ref={ref} aria-labelledby="bucket-title" onCancel={e => { e.preventDefault(); onClose() }} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
     <div className="drawer-content">
       <header className="drawer-header"><div><p className="eyebrow">{selection.context} · Planning bucket</p>
-        <h2 id="bucket-title">{b.lane}</h2><p>{b.equipment_type} · {dateLabel(b.pickup_date)} · <Badge value={b.status} /></p>
+        <h2 id="bucket-title">{laneLabel(b.lane)}</h2><p>{equipmentLabel(b.equipment_type)} · {dateLabel(b.pickup_date)} · <Badge value={b.status} /></p>
       </div><button onClick={onClose} autoFocus aria-label="Close drilldown">Close</button></header>
       <section className="decision-summary"><h3>Decision summary</h3><dl className="detail-grid">
         <div><dt>Expected unfulfilled load-equivalents</dt><dd>{number(b.expected_unfulfilled)}</dd></div>
         <div><dt>Effective coverage</dt><dd>{coverage(b.effective_capacity_coverage)}</dd></div>
         <div><dt>Modeled revenue exposure</dt><dd>{money(b.modeled_revenue_exposure, b.currency)}</dd></div>
       </dl></section>
-      <section><h3>Why this bucket is at risk</h3><p>{b.risk.reason}</p>
+      <section><h3>{b.expected_unfulfilled > 0 && b.root_cause.primary && b.root_cause.primary !== 'CARRIER_CONCENTRATION' ? 'Why this bucket is at risk' : 'Bucket details'}</h3><p>{b.risk.reason}</p>
         <p><strong>Primary root cause:</strong> {label(b.root_cause.primary)}</p>
         <p><strong>Secondary contributors:</strong> {b.root_cause.secondary.length ? b.root_cause.secondary.map(label).join(', ') : 'None'}</p>
       </section>
@@ -45,7 +48,7 @@ export function BucketDrawer({ selection, onClose }: { selection: BucketSelectio
           <p className="muted">Priority score: {number(a.action_priority_score)} · {selection.actionId === a.action_id ? 'Selected action' : selection.context}</p>
           <p>{a.recommended_action}</p><details><summary>Supporting evidence</summary><ul>{a.evidence.map((e, i) => <li key={`${i}-${e}`}>{e}</li>)}</ul></details>
         </article>)}
-        {b.rate_search?.recommendation && <RateScenario bucket={b} />}
+        {rateOpportunity(b) && <RateScenario bucket={b} />}
       </section>
       <details className="drawer-section"><summary>Capacity &amp; commercial metrics</summary>
         {b.negative_gross_spread && <p className="notice danger">Negative gross spread: planned carrier buy cost exceeds sell revenue.</p>}

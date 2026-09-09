@@ -20,7 +20,7 @@ export function shiftSampleDates(data: Datasets, metadata: SampleMetadata, asOf:
 export function loadSample(files: CsvFiles, metadata: SampleMetadata, analysisTime: string, timeZone = DEFAULT_TIME_ZONE) {
   const original = validateCsv(files, metadata.sample_as_of, timeZone)
   if (!original.data) return original
-  return validateCsv(serializeDatasets(shiftSampleDates(original.data, metadata, analysisTime, timeZone)), analysisTime, timeZone)
+  return { ...validateCsv(serializeDatasets(shiftSampleDates(original.data, metadata, analysisTime, timeZone)), analysisTime, timeZone), displayLabels: original.displayLabels }
 }
 export async function fetchSample(analysisTime: string, fetcher: typeof fetch = fetch) {
   const metadataResponse = await fetcher('/sample-data/sample-metadata.json')

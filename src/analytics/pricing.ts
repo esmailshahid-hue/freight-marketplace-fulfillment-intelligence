@@ -7,7 +7,8 @@ export const rateBand = (index: number) => index < .90 ? 0 : index < .97 ? 1 : i
 export function benchmark(offers: HistoricalOffer[], lane: string, equipment: string, asOf: string, config: Config = DEFAULT_CONFIG, timeZone = DEFAULT_TIME_ZONE) {
   const end = localDate(asOf, timeZone)
   for (const days of [config.RATE_LOOKBACK_DAYS, config.RATE_FALLBACK_LOOKBACK_DAYS]) {
-    const window = offers.filter(r => r.date >= addDays(end, -days) && r.date <= end)
+    const start = addDays(end, -days)
+    const window = offers.filter(r => r.date >= start && r.date <= end)
     const segments = [window.filter(r => r.lane === lane && r.equipment_type === equipment), window.filter(r => r.lane === lane), window.filter(r => r.equipment_type === equipment), window]
     const minimums = [config.MIN_ACCEPTED_RATE_SAMPLES, config.MIN_ACCEPTED_RATE_SAMPLES, config.MIN_RATE_BAND_SAMPLES, config.MIN_GLOBAL_RATE_SAMPLES]
     for (let level = 0; level < segments.length; level++) {

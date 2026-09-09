@@ -1,3 +1,4 @@
+import { useDisplayLabels } from '../ui/displayLabels'
 import { useDeferredValue, useMemo, useState } from 'react'
 import { runScenario } from '../analytics/scenarios'
 import type { Analysis } from '../analytics/engine'
@@ -7,7 +8,7 @@ import { changeLabel } from '../ui/comparison'
 import { ScenarioComparison } from '../components/ScenarioComparison'
 import { ActionTable } from '../components/ActionTable'
 import { Table } from '../components/Table'
-import { coverage, money, number, percent, signedPercent } from '../ui/format'
+import { coverage, money, moneyChange, number, percent, signedPercent } from '../ui/format'
 import { bucketForAction, uniquePairs } from '../ui/selectors'
 import { initialControls, toScenario, type ScenarioControls } from '../ui/scenarioControls'
 import type { Action } from '../analytics/types'
@@ -22,6 +23,7 @@ function Slider({ name, value, min, max, step, onChange, format = signedPercent 
 export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
   data: Datasets; analysis: Analysis; asOf: string; currency: string; onInspect: (selection: BucketSelection) => void;
 }) {
+  const { laneLabel, equipmentLabel } = useDisplayLabels()
   const pairs = useMemo(() => uniquePairs(analysis.buckets), [analysis.buckets])
   const [controls, setControls] = useState(() => initialControls(pairs[0]?.lane ?? '', pairs[0]?.equipment_type ?? ''))
   const deferred = useDeferredValue(controls)
@@ -42,7 +44,7 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
     changeLabel(before.projected_fulfillment_pct, after.projected_fulfillment_pct, ' pp', 100),
     changeLabel(before.effective_capacity_coverage, after.effective_capacity_coverage, '×', 1, 2),
     changeLabel(before.expected_unfulfilled, after.expected_unfulfilled, ' loads'),
-    changeLabel(before.modeled_revenue_exposure, after.modeled_revenue_exposure, ` ${currency}`, 1, 2),
+    moneyChange(before.modeled_revenue_exposure, after.modeled_revenue_exposure, currency),
     changeLabel(before.gross_take_rate_proxy, after.gross_take_rate_proxy, ' pp', 100),
     changeLabel(before.high_critical_buckets, after.high_critical_buckets, '', 1, 0),
     changeLabel(before.action_count, after.action_count, '', 1, 0),
@@ -73,10 +75,10 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
           <p className="muted">Applied after global changes, only to the selected lane and equipment.</p>
           {controls.overrideEnabled && <>
             <label>Override lane<select value={controls.lane} onChange={e => setControls(c => ({ ...c, lane: e.target.value, equipment: pairs.find(p => p.lane === e.target.value)!.equipment_type }))}>
-              {[...new Set(pairs.map(p => p.lane))].map(lane => <option key={lane} value={lane}>{lane}</option>)}
+              {[...new Set(pairs.map(p => p.lane))].map(lane => <option key={lane} value={lane}>{laneLabel(lane)}</option>)}
             </select></label>
             <label>Override equipment<select value={controls.equipment} onChange={e => update('equipment', e.target.value)}>
-              {pairs.filter(p => p.lane === controls.lane).map(p => <option key={p.equipment_type} value={p.equipment_type}>{p.equipment_type}</option>)}
+              {pairs.filter(p => p.lane === controls.lane).map(p => <option key={p.equipment_type} value={p.equipment_type}>{equipmentLabel(p.equipment_type)}</option>)}
             </select></label>
             <Slider name="Lane demand change" value={controls.overrideDemand} min={-50} max={50} step={5} onChange={v => update('overrideDemand', v)} />
             <Slider name="Lane carrier capacity change" value={controls.overrideCapacity} min={-50} max={50} step={5} onChange={v => update('overrideCapacity', v)} />
@@ -97,12 +99,12 @@ export function ScenarioLab({ data, analysis, asOf, currency, onInspect }: {
           ['Newly created actions', result.deltas.new, 'Scenario'], ['Resolved actions', result.deltas.resolved, 'Baseline'],
           ['Actions whose severity increased', result.deltas.increased, 'Scenario'], ['Actions whose severity decreased', result.deltas.decreased, 'Scenario'],
         ] as const).map(([title, actions, context]) => <details className="panel action-delta" key={title} open={actions.length > 0}>
-          <summary>{title} <span className="count">{actions.length}</span></summary><ActionTable caption={title} actions={actions} currency={currency} onSelect={a => inspect(a, context)} empty="No changes." />
+          <summary>{title} <span className="count">{actions.length}</span></summary><ActionTable buckets={context === 'Baseline' ? result.baseline.buckets : result.scenario.buckets} caption={title} actions={actions} currency={currency} onSelect={a => inspect(a, context)} empty="No changes." />
         </details>)}
         <details className="panel"><summary>All scenario lanes</summary>
           <Table caption="Scenario planning buckets" rows={result.scenario.buckets} rowKey={b => b.id} onSelect={bucket => onInspect({ bucket, actions: result.scenario.actions, context: 'Scenario' })} columns={[
-            { title: 'Lane', render: bucket => <button className="text-button lane" onClick={e => { e.stopPropagation(); onInspect({ bucket, actions: result.scenario.actions, context: 'Scenario' }) }}>{bucket.lane}</button> },
-            { title: 'Equipment', render: b => b.equipment_type }, { title: 'Pickup date', render: b => b.pickup_date },
+            { title: 'Lane', render: bucket => <button className="text-button lane" onClick={e => { e.stopPropagation(); onInspect({ bucket, actions: result.scenario.actions, context: 'Scenario' }) }}>{laneLabel(bucket.lane)}</button> },
+            { title: 'Equipment', render: b => equipmentLabel(b.equipment_type) }, { title: 'Pickup date', render: b => b.pickup_date },
             { title: 'Effective capacity coverage', render: b => coverage(b.effective_capacity_coverage), numeric: true },
           ]} />
         </details>

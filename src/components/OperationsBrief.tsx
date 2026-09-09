@@ -1,8 +1,10 @@
+import { useDisplayLabels } from '../ui/displayLabels'
 import { useEffect, useRef, useState } from 'react'
 import type { Analysis } from '../analytics/engine'
 import { BRIEF_SECTIONS, type OperationsBrief as Brief } from '../brief/context'
 import { requestOperationsBrief } from '../brief/client'
 export function OperationsBrief({ analysis, asOf, currency }: { analysis: Analysis; asOf: string; currency: string }) {
+  const { labels } = useDisplayLabels()
   const [available, setAvailable] = useState(false)
   const [state, setState] = useState<{ status: 'idle' | 'loading' | 'error' | 'ready'; brief?: Brief; message?: string }>({ status: 'idle' })
   const pending = useRef<AbortController | null>(null)
@@ -17,7 +19,7 @@ export function OperationsBrief({ analysis, asOf, currency }: { analysis: Analys
     const controller = new AbortController(); pending.current = controller
     setState({ status: 'loading' })
     try {
-      const brief = await requestOperationsBrief(analysis, asOf, currency, AbortSignal.any([controller.signal, AbortSignal.timeout(25_000)]))
+      const brief = await requestOperationsBrief(analysis, asOf, currency, AbortSignal.any([controller.signal, AbortSignal.timeout(25_000)]), fetch, labels)
       if (!controller.signal.aborted) setState({ status: 'ready', brief })
     } catch {
       if (!controller.signal.aborted) setState({ status: 'error', message: 'Operations Brief is unavailable. Your analysis is unaffected. Please try again.' })

@@ -1,7 +1,8 @@
+import { emptyDisplayLabels, rememberDisplayLabels } from './displayLabels'
 import Papa from 'papaparse'
 import { SCHEMAS, type DatasetName, type Datasets } from './schemas'
 import { mapColumns, normalizeKey, normalizeLane } from './mapping'
-import { timestamp, localDate, validDate, validDatetime, DEFAULT_TIME_ZONE } from '../utils/dates'
+import { timestamp, DAY, localDate, validDate, validDatetime, DEFAULT_TIME_ZONE } from '../utils/dates'
 import { key } from '../utils/math'
 export interface DataIssue { dataset: DatasetName; row?: number; field?: string; message: string }
 export type CsvFiles = Partial<Record<DatasetName, string>>
@@ -9,7 +10,9 @@ export type CsvFiles = Partial<Record<DatasetName, string>>
 export type ColumnMappings = Partial<Record<DatasetName, Record<string, string | null>>>
 export function validateCsv(files: CsvFiles, analysisTime: string, timeZone = DEFAULT_TIME_ZONE, columnMappings: ColumnMappings = {}) {
   if (!validDatetime(analysisTime)) throw new Error('Invalid analysis time')
+  const analysisInstant = timestamp(analysisTime, timeZone), analysisDate = localDate(analysisInstant, timeZone)
   const errors: DataIssue[] = [], warnings: DataIssue[] = []
+  const displayLabels = emptyDisplayLabels()
   const data: Datasets = { upcoming: [], capacity: [], historical: [], offers: [] }
   for (const dataset of Object.keys(SCHEMAS) as DatasetName[]) {
     const csv = files[dataset]
@@ -57,6 +60,7 @@ export function validateCsv(files: CsvFiles, analysisTime: string, timeZone = DE
         row[field] = field === 'currency' ? value.toUpperCase() : out
       }
       if (dataset === 'upcoming' || dataset === 'historical') row.lane ||= `${row.origin} → ${row.destination}`
+      const sourceLane = String(row.lane ?? ''), sourceEquipment = String(row.equipment_type ?? '')
       if (row.lane) row.lane = normalizeLane(String(row.lane))
       if (row.equipment_type) row.equipment_type = normalizeKey(String(row.equipment_type))
       const idField = dataset === 'capacity' ? 'capacity_id' : dataset === 'offers' ? 'offer_id' : dataset === 'payments' ? 'carrier_id' : 'load_id'
@@ -66,6 +70,7 @@ export function validateCsv(files: CsvFiles, analysisTime: string, timeZone = DE
       if (dataset === 'payments' && Number(row.overdue_payable) > Number(row.open_payable)) issue('overdue_payable', 'Overdue payable exceeds open payable')
       if (dataset === 'historical' && row.carrier_id && row.final_buy_rate === null) issue('final_buy_rate', 'Assigned load requires positive final buy rate')
       if (errors.length > before) return
+      rememberDisplayLabels(displayLabels, sourceLane, sourceEquipment)
       const warn = (message: string) => warnings.push({ dataset, row: i + 2, message })
       if (dataset === 'capacity') {
         const block = key(String(row.carrier_id), String(row.lane), String(row.equipment_type), String(row.capacity_date))
@@ -84,14 +89,15 @@ export function validateCsv(files: CsvFiles, analysisTime: string, timeZone = DE
   }
   const currencies = new Set([...data.upcoming, ...data.historical, ...data.offers, ...(data.payments ?? [])].map(r => r.currency))
   if (currencies.size > 1) errors.push({ dataset: 'upcoming', message: 'V1 supports one currency per analysis. Convert rates to a common currency before upload.' })
-  const pastDue = data.upcoming.filter(r => timestamp(r.pickup_datetime, timeZone) < timestamp(analysisTime, timeZone))
+  const pastDue = data.upcoming.filter(r => timestamp(r.pickup_datetime, timeZone) < analysisInstant)
   pastDue.forEach(r => warnings.push({ dataset: 'upcoming', message: `Past Due: ${r.load_id}` }))
-  data.upcoming = data.upcoming.filter(r => timestamp(r.pickup_datetime, timeZone) >= timestamp(analysisTime, timeZone))
-  const futureHistorical = data.historical.filter(r => r.date > localDate(analysisTime, timeZone))
-  const futureOffers = data.offers.filter(r => r.date > localDate(analysisTime, timeZone))
+  data.upcoming = data.upcoming.filter(r => timestamp(r.pickup_datetime, timeZone) >= analysisInstant)
+  const outsideHorizon = data.upcoming.filter(r => timestamp(r.pickup_datetime, timeZone) > analysisInstant + 7 * DAY)
+  const futureHistorical = data.historical.filter(r => r.date > analysisDate)
+  const futureOffers = data.offers.filter(r => r.date > analysisDate)
   futureHistorical.forEach(r => warnings.push({ dataset: 'historical', message: `Future historical row excluded: ${r.load_id}` }))
   futureOffers.forEach(r => warnings.push({ dataset: 'offers', message: `Future historical row excluded: ${r.offer_id}` }))
-  data.historical = data.historical.filter(r => r.date <= localDate(analysisTime, timeZone))
-  data.offers = data.offers.filter(r => r.date <= localDate(analysisTime, timeZone))
-  return { data: errors.length ? null : data, errors, warnings, pastDue, futureHistorical, futureOffers }
+  data.historical = data.historical.filter(r => r.date <= analysisDate)
+  data.offers = data.offers.filter(r => r.date <= analysisDate)
+  return { data: errors.length ? null : data, errors, warnings, pastDue, futureHistorical, futureOffers, displayLabels, outsideHorizon }
 }

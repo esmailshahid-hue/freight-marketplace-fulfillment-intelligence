@@ -1,4 +1,4 @@
-import { SCHEMAS, type DatasetName } from './schemas'
+import { SCHEMAS, type DatasetName } from './schemas.ts'
 export const normalizeKey = (value: string) => value.trim().toLowerCase().replace(/[\s_-]+/g, ' ')
 export const normalizeLane = (value: string) => normalizeKey(value.replace(/\s*(?:→|->)\s*/g, ' → '))
 export function mapColumns(dataset: DatasetName, headers: string[]) {

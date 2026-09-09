@@ -10,7 +10,7 @@ it('distinguishes unavailable numbers from zero and preserves signed economics',
   expect(coverage(NaN)).toBe('Unavailable'); expect(money(Infinity)).toBe('Unavailable')
   expect(percent(0)).toBe('0.0%'); expect(coverage(0)).toBe('0.00×')
   expect(number(15.625)).toBe('15.6'); expect(percent(-.125)).toBe('-12.5%')
-  expect(money(-200)).toBe('SAR -200.00'); expect(suggestedRate(3137.6, 'SAR')).toBe('Approximately SAR 3,150.00')
+  expect(money(-200)).toBe('SAR −200'); expect(suggestedRate(3137.6, 'SAR')).toBe('Approximately SAR 3,150')
 })
 it('formats calendar dates without a host-timezone day shift and labels enum values', () => {
   expect(dateLabel('2026-09-07')).toBe('07 Sept 2026')
