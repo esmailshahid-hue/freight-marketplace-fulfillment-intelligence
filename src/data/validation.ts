@@ -5,7 +5,9 @@ import { timestamp, localDate, validDate, validDatetime, DEFAULT_TIME_ZONE } fro
 import { key } from '../utils/math'
 export interface DataIssue { dataset: DatasetName; row?: number; field?: string; message: string }
 export type CsvFiles = Partial<Record<DatasetName, string>>
-export function validateCsv(files: CsvFiles, analysisTime: string, timeZone = DEFAULT_TIME_ZONE, columnMappings: Partial<Record<DatasetName, Record<string, string>>> = {}) {
+// null explicitly leaves a field unmapped; omitted keys retain automatic mapping.
+export type ColumnMappings = Partial<Record<DatasetName, Record<string, string | null>>>
+export function validateCsv(files: CsvFiles, analysisTime: string, timeZone = DEFAULT_TIME_ZONE, columnMappings: ColumnMappings = {}) {
   if (!validDatetime(analysisTime)) throw new Error('Invalid analysis time')
   const errors: DataIssue[] = [], warnings: DataIssue[] = []
   const data: Datasets = { upcoming: [], capacity: [], historical: [], offers: [] }
@@ -19,9 +21,16 @@ export function validateCsv(files: CsvFiles, analysisTime: string, timeZone = DE
     const headers = parsed.meta.fields ?? []
     const automatic = mapColumns(dataset, headers)
     const mapping = { ...automatic.mapping, ...columnMappings[dataset] }
-    const unresolved = automatic.unresolved.filter(field => !columnMappings[dataset]?.[field])
+    const unresolved = new Set(automatic.unresolved.filter(field => !Object.hasOwn(columnMappings[dataset] ?? {}, field)))
+    for (const [field, rule] of Object.entries(SCHEMAS[dataset])) {
+      if (!rule.optional && !mapping[field]) unresolved.add(field)
+    }
     const used = new Set<string>()
     for (const [field, header] of Object.entries(mapping)) {
+      if (header === null) {
+        if (!SCHEMAS[dataset][field]) errors.push({ dataset, field, message: 'Invalid explicit column mapping' })
+        continue
+      }
       if (!headers.includes(header) || used.has(header) || !SCHEMAS[dataset][field]) errors.push({ dataset, field, message: 'Invalid explicit column mapping' })
       used.add(header)
     }
@@ -31,7 +40,8 @@ export function validateCsv(files: CsvFiles, analysisTime: string, timeZone = DE
       const row: Record<string, unknown> = {}, before = errors.length
       const issue = (field: string, message: string) => errors.push({ dataset, row: i + 2, field, message })
       for (const [field, rule] of Object.entries(SCHEMAS[dataset])) {
-        const value = String(input[mapping[field]] ?? '').trim()
+        const header = mapping[field]
+        const value = String(header == null ? '' : input[header] ?? '').trim()
         if (!value) { row[field] = field === 'currency' ? 'SAR' : null; if (!rule.optional) issue(field, 'Required non-blank value'); continue }
         let out: string | number | boolean = value
         if (rule.type === 'number' || rule.type === 'integer') {

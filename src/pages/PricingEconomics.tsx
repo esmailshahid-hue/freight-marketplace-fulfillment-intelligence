@@ -2,9 +2,9 @@ import type { PlanningBucket } from '../analytics/types'
 import { Table } from '../components/Table'
 import { RateScenario } from '../components/RateScenario'
 import { dateLabel, label, money, number, percent, TAKE_RATE_HELP } from '../ui/format'
-export function PricingEconomics({ buckets, onBucket }: { buckets: PlanningBucket[]; onBucket: (bucket: PlanningBucket) => void }) {
+export function PricingEconomics({ buckets, currency, onBucket }: { currency: string; buckets: PlanningBucket[]; onBucket: (bucket: PlanningBucket) => void }) {
   return <>
-    <h2>Pricing &amp; Economics</h2><p className="section-intro">Baseline · modeled acceptance based on historical rate/acceptance behavior. Rates are shown in SAR.</p>
+    <h2>Pricing &amp; Economics</h2><p className="section-intro">Baseline · modeled acceptance based on historical rate/acceptance behavior. Rates are shown in {currency}.</p>
     <p className="muted">Gross take-rate proxy: {TAKE_RATE_HELP}</p>
     <Table caption="Pricing and economics by planning bucket" rows={buckets} rowKey={b => b.id} onSelect={onBucket} columns={[
       { title: 'Lane', render: b => <button className="text-button lane" onClick={e => { e.stopPropagation(); onBucket(b) }}>{b.lane}</button> },

@@ -81,3 +81,16 @@ footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #d8dee5; fon
   .kpi-grid, .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kpi dd { font-size: 20px; } .drawer-content { padding: 16px; } .drawer { width: 98vw; max-width: 98vw; }
 }
+.source-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.source-controls button[aria-pressed='true'] { background: #edf3f8; border-color: #285c87; }
+.upload-files { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 16px; }
+.upload-files p { margin: 8px 0; font-size: 13px; }
+.upload-files input { max-width: 100%; }
+.filename { overflow-wrap: anywhere; }
+.mapping-panel, .excluded-rows { margin-top: 16px; }
+.mapping-panel .table-scroll, .excluded-rows .table-scroll { margin-top: 12px; max-height: 460px; }
+.mapping-panel select { min-width: 200px; }
+select[aria-invalid='true'] { border-color: #8b2d2d; }
+.validation-results section { margin-top: 20px; }
+.validation-results .table-scroll { max-height: 320px; }
+button:disabled { opacity: 0.55; cursor: not-allowed; }

@@ -2,7 +2,7 @@
 
 Phase 1 implements the deterministic business logic described in [the product specification](docs/freight_marketplace_fulfillment_capacity_v1_spec.md). It answers whether upcoming freight demand has enough qualified physical capacity and enough modeled effective capacity, and identifies operational actions when it does not.
 
-Phase 2A adds a minimal functional browser UI over that stable foundation. This is a synthetic portfolio prototype, not production-ready software. The application has five table-based tabs, a shared bucket drilldown and scenario controls. There is no charting, authentication, database, external API, AI/LLM integration, tracking, routing, dispatch, OCR, TMS integration, or machine-learning model. Uploads, mapping UI, exports and final visual polish remain outside this phase.
+Phase 2A adds a minimal functional browser UI over that stable foundation. This is a synthetic portfolio prototype, not production-ready software. The application has five table-based tabs, a shared bucket drilldown and scenario controls. There is no charting, authentication, database, external API, AI/LLM integration, tracking, routing, dispatch, OCR, TMS integration, or machine-learning model. Phase 3 adds CSV upload, mapping and validation using the same analytics. Exports and final visual polish remain outside the current scope.
 
 ## Run and verify
 
@@ -23,7 +23,7 @@ No credentials or environment secrets are required. The sample generator only wr
 
 ## Phase 2A browser workflow
 
-On startup, `App.tsx` captures one analysis timestamp and calls the existing `fetchSample()` utility. It fetches local sample metadata and all five CSV assets, validates them, shifts sample dates and validates the shifted result. Only validated data reaches `analyze()`. A failed request or blocking validation error shows a visible error and Retry button. Existing validation warnings remain available in Data status. No uploaded data, network service or persistent storage is involved.
+On startup, `App.tsx` captures one analysis timestamp and calls the existing `fetchSample()` utility. It fetches local sample metadata and all five CSV assets, validates them, shifts sample dates and validates the shifted result. Only validated data reaches `analyze()`. A failed request or blocking validation error shows a visible error and Retry button. Existing validation warnings remain available in Data status. Sample loading only reads the local sample assets; no external service or persistent storage is involved.
 
 All baseline tabs use the same seven-day `Analysis` object and fixed analysis timestamp. This Phase 2A scope uses six Operations KPIs and a seven-day baseline, rather than the later specification's five-KPI/72-hour queue layout. Scenario Lab is explicitly separate: it calls `runScenario()` with percent controls converted to decimal arguments and the three supported threshold overrides. It does not replace scenario calculations with UI arithmetic. Tab switching preserves current controls; resetting restores the engine defaults and disables the lane override. Refreshing starts a new sample snapshot and clears all UI state.
 
@@ -42,11 +42,28 @@ UI files are `src/App.tsx`, `src/pages/*.tsx`, `src/components/*.tsx`, `src/ui/{
 
 Browser validation covers automatic sample loading and KPI equality with the engine, all five tabs, capacity filtering and empty results, carrier aggregation (five carriers/six blocks), pricing expansion, supply-gap ordering, global and lane-specific scenario changes, threshold changes/excluded blocks, all four action-delta categories, baseline-vs-scenario drilldown context, reset, and failed-file Retry recovery. No charting or UI dependencies were added.
 
+## Phase 3: analyze your own CSV files
+
+Select **Upload own data**, then:
+
+1. Choose a CSV in each of the four required dataset slots. Carrier payments is optional. Filenames need not match the sample filenames; each slot determines its contract. File cards show filename, bytes, detected record count, mapping status and validation status.
+2. Review the column mappings. Each schema field shows its requirement, automatic match and a header dropdown. Exact normalized names and the existing controlled synonyms preselect unique matches. Required ambiguous or missing fields need a selection. Optional fields may stay unmapped; optional lane is computed from origin and destination. A column cannot be used twice. Unmap its current field first to move it.
+3. Click **Validate data**. This captures the current application timestamp for the analysis session. All row validation goes through `validateCsv`, using the original CSV text and explicit mappings. Errors block analysis; warnings do not. Expand the retained past-due upcoming, future historical and future offer tables to inspect rows excluded from analytics.
+4. Click **Analyze Data**. The same five tabs, deterministic `analyze()` / `runScenario()` engines, and drilldowns use only the validated uploaded datasets. Data status retains warnings and excluded rows. Missing payments disables only payment exposure actions.
+
+**Manage uploaded data** reopens the editor with files and mappings intact. Any file read, replacement, removal or mapping change invalidates validation and analysis immediately. **Reset to sample data** clears uploads and mappings and remounts the existing sample loader with a new timestamp. Refresh also returns to the sample.
+
+Upload state is a reducer in `src/ui/uploadState.ts`: it owns the source mode, file slots, reviewed mappings, validation snapshot and analyzed snapshot. Read tokens reject stale asynchronous results after replacement/removal/reset. `UploadWorkflow.tsx` renders that state; `ValidationResults.tsx` displays the existing validation output. `App.tsx` mounts either the sample loader or the upload workflow/workspace. The upload path never imports sample rows or invokes date shifting. Original text remains unchanged, and source data never mixes.
+
+Your CSV files are analyzed in this browser session only. They are not uploaded or stored. No localStorage, IndexedDB, cookies, database, server upload or external API is used. Uploaded dates remain exactly as supplied; only the synthetic sample is shifted. Analysis timestamps display in Asia/Riyadh, as in the existing application.
+
+Two presentation/validation wiring fixes were necessary: explicit optional unmapping now has `null` semantics at the validation boundary, and the pricing page uses the session currency instead of hardcoded SAR. No analytics formulas, thresholds, generator, committed samples or planted-scenario assertions changed. `tests/uploads.test.ts` covers the upload lifecycle, mappings, error/warning rules, temporal exclusions, source isolation, stale reads, reset and scenario propagation.
+
 ## Modules and entrypoints
 
 - `src/data/schemas.ts`: TypeScript contracts, executable field schemas, filenames.
 - `src/data/mapping.ts`: controlled synonyms and conservative header matching.
-- `src/data/validation.ts`: Papa Parse CSV ingestion, normalization, blocking errors, row warnings, temporal exclusion, currency checking. Returns `data: null` when any blocking error exists. Past-due and future historical rows are retained separately for later UI inspection.
+- `src/data/validation.ts`: Papa Parse CSV ingestion, normalization, blocking errors, row warnings, temporal exclusion, currency checking. Returns `data: null` when any blocking error exists. Past-due and future historical rows are retained separately and exposed in expandable validation tables.
 - `src/data/synthetic.ts`: seeded synthetic dataset construction. Scenario names never enter the analytical inputs.
 - `src/data/sampleLoader.ts`: serialization, sample-only date shifting, and an optional browser loader for all five static local sample files. Uploaded CSVs use `validateCsv` directly and are never shifted.
 - `src/analytics/config.ts`: all specification defaults in one place.
@@ -75,7 +92,7 @@ if (validated.data) {
 }
 ```
 
-Explicit mappings can be passed as the fourth `validateCsv` argument, e.g. `{ upcoming: { planned_buy_rate: 'Carrier Rate' } }`. Ambiguous mappings stay blocking until resolved; no mapping panel is built in this phase. Callers must use the validation boundary for raw input; `analyze` accepts already validated types and scenario-generated fractional quantities.
+Explicit mappings can be passed as the fourth `validateCsv` argument, e.g. `{ upcoming: { planned_buy_rate: 'Carrier Rate' } }`. Ambiguous required mappings stay blocking until resolved. Pass `null` to explicitly leave an optional field unmapped (omitting a key retains automatic detection). Callers must use the validation boundary for raw input; `analyze` accepts already validated types and scenario-generated fractional quantities.
 
 ## Data contracts
 
