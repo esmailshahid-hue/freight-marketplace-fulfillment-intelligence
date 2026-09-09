@@ -868,17 +868,18 @@ Do not label it lost revenue.
 
 # 15. Concentration engine
 
-For every qualified capacity row:
+Carrier-level aggregation correction (requested after Phase 1): aggregate all qualified additive capacity blocks belonging to the same carrier within each lane × equipment × pickup-date planning bucket.
 
 ```text
+carrier_effective_capacity =
+  sum(row_effective_capacity for all qualified rows belonging to that carrier)
+
 carrier_effective_share = carrier_effective_capacity / effective_capacity
-```
 
-Then:
-
-```text
 top_carrier_share = max(carrier_effective_share)
 ```
+
+Retain individual row contributions for drilldown. Risk, root-cause classification, concentration status/warnings, backup-carrier actions, supply-gap concentration and payment exposure must all use these carrier-level shares. Splitting a carrier's capacity into additive blocks must not change its concentration. The thresholds below are unchanged.
 
 If effective capacity is zero, set top-carrier share to 0 and show `No effective capacity`.
 

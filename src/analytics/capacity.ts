@@ -13,9 +13,18 @@ export function calculateCapacity(rows: CarrierCapacity[], history: HistoricalLo
   const qualified = contributions.filter(r => r.qualified)
   const raw = sum(qualified, r => r.available_trucks), effective = sum(qualified, r => r.effective)
   const adjusted = sum(qualified, r => r.available_trucks * (r.modeled.expected ?? 0))
+  // Capacity blocks remain additive; concentration measures the carrier relationship.
+  const totals = new Map<string, { carrier_id: string; carrier_name: string; effective: number; capacity_ids: string[] }>()
+  for (const row of qualified) {
+    const carrier = totals.get(row.carrier_id) ?? { carrier_id: row.carrier_id, carrier_name: row.carrier_name, effective: 0, capacity_ids: [] }
+    carrier.effective += row.effective
+    carrier.capacity_ids.push(row.capacity_id)
+    totals.set(row.carrier_id, carrier)
+  }
+  const carriers = [...totals.values()].map(c => ({ ...c, effective_share: effective ? c.effective / effective : 0 }))
   return { raw, effective, acceptance_adjusted_capacity: adjusted, weighted_acceptance: raw ? adjusted / raw : 0,
     estimate_available: qualified.every(r => r.modeled.expected !== null),
-    top_carrier_share: effective ? Math.max(...qualified.map(r => r.effective / effective)) : 0,
+    top_carrier_share: Math.max(0, ...carriers.map(c => c.effective_share)), carriers,
     contributions: contributions.map(r => ({ ...r, effective_share: effective ? r.effective / effective : 0 })) }
 }
 export type Capacity = ReturnType<typeof calculateCapacity>

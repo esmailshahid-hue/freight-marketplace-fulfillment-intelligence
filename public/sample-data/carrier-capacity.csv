@@ -1,57 +1,72 @@
 capacity_id,carrier_id,carrier_name,lane,equipment_type,capacity_date,available_trucks,deadhead_km_to_origin,active,contract_status
-K0-0-0,C001,Synthetic Carrier C001,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07,3,45,true,Preferred
-K0-0-1,C002,Synthetic Carrier C002,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07,3,28,true,Contract
-K0-0-2,C003,Synthetic Carrier C003,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07,3,77,true,Spot
-K0-0-3,C004,Synthetic Carrier C004,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07,2,42,true,Spot
-K0-2-0,C001,Synthetic Carrier C001,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09,3,57,true,Preferred
-K0-2-1,C002,Synthetic Carrier C002,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09,3,22,true,Contract
-K0-2-2,C003,Synthetic Carrier C003,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09,3,64,true,Spot
-K0-2-3,C004,Synthetic Carrier C004,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09,2,31,true,Spot
-K0-4-0,C001,Synthetic Carrier C001,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11,3,107,true,Preferred
-K0-4-1,C002,Synthetic Carrier C002,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11,3,119,true,Contract
-K0-4-2,C003,Synthetic Carrier C003,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11,3,105,true,Spot
-K0-4-3,C004,Synthetic Carrier C004,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11,2,69,true,Spot
-K1-2-0,C005,Synthetic Carrier C005,Jubail → Tabuk,Lowbed,2026-09-09,2,34,true,Preferred
-K1-2-1,C006,Synthetic Carrier C006,Jubail → Tabuk,Lowbed,2026-09-09,2,115,true,Contract
-K1-2-2,C007,Synthetic Carrier C007,Jubail → Tabuk,Lowbed,2026-09-09,2,112,true,Spot
-K1-2-3,C008,Synthetic Carrier C008,Jubail → Tabuk,Lowbed,2026-09-09,2,108,true,Spot
-K2-3-0,C009,Synthetic Carrier C009,Dammam → Riyadh,Reefer,2026-09-10,4,114,true,Preferred
-K2-3-1,C010,Synthetic Carrier C010,Dammam → Riyadh,Reefer,2026-09-10,4,102,true,Contract
-K2-3-2,C011,Synthetic Carrier C011,Dammam → Riyadh,Reefer,2026-09-10,4,35,true,Spot
-K2-3-3,C012,Synthetic Carrier C012,Dammam → Riyadh,Reefer,2026-09-10,3,102,true,Spot
-K3-4-0,C013,Synthetic Carrier C013,Riyadh → Jeddah,Dry Van,2026-09-11,8,102,true,Preferred
-K3-4-1,C014,Synthetic Carrier C014,Riyadh → Jeddah,Dry Van,2026-09-11,3,104,true,Contract
-K3-4-2,C015,Synthetic Carrier C015,Riyadh → Jeddah,Dry Van,2026-09-11,3,88,true,Spot
-K3-4-3,C016,Synthetic Carrier C016,Riyadh → Jeddah,Dry Van,2026-09-11,2,58,true,Spot
-K4-5-0,C017,Synthetic Carrier C017,Jeddah → Jubail,Flatbed,2026-09-12,3,119,true,Preferred
-K4-5-1,C018,Synthetic Carrier C018,Jeddah → Jubail,Flatbed,2026-09-12,3,64,true,Contract
-K4-5-2,C019,Synthetic Carrier C019,Jeddah → Jubail,Flatbed,2026-09-12,3,29,true,Spot
-K4-5-3,C020,Synthetic Carrier C020,Jeddah → Jubail,Flatbed,2026-09-12,3,39,true,Spot
-K5-6-0,C021,Synthetic Carrier C021,Riyadh → Dammam,Dry Van,2026-09-13,5,100,true,Preferred
-K5-6-1,C022,Synthetic Carrier C022,Riyadh → Dammam,Dry Van,2026-09-13,5,58,true,Contract
-K5-6-2,C023,Synthetic Carrier C023,Riyadh → Dammam,Dry Van,2026-09-13,4,41,true,Spot
-K5-6-3,C024,Synthetic Carrier C024,Riyadh → Dammam,Dry Van,2026-09-13,4,47,true,Spot
-K6-1-0,C025,Synthetic Carrier C025,Jeddah → Dammam,Reefer,2026-09-08,5,115,true,Preferred
-K6-1-1,C026,Synthetic Carrier C026,Jeddah → Dammam,Reefer,2026-09-08,5,39,true,Contract
-K6-1-2,C027,Synthetic Carrier C027,Jeddah → Dammam,Reefer,2026-09-08,4,107,true,Spot
-K6-1-3,C028,Synthetic Carrier C028,Jeddah → Dammam,Reefer,2026-09-08,4,78,true,Spot
-K7-2-0,C029,Synthetic Carrier C029,Dammam → Jubail,Tanker,2026-09-09,5,30,true,Preferred
-K7-2-1,C030,Synthetic Carrier C030,Dammam → Jubail,Tanker,2026-09-09,5,112,true,Contract
-K7-2-2,C031,Synthetic Carrier C031,Dammam → Jubail,Tanker,2026-09-09,4,100,true,Spot
-K7-2-3,C032,Synthetic Carrier C032,Dammam → Jubail,Tanker,2026-09-09,4,63,true,Spot
-K8-3-0,C033,Synthetic Carrier C033,Jubail → Riyadh,Flatbed,2026-09-10,5,31,true,Preferred
-K8-3-1,C034,Synthetic Carrier C034,Jubail → Riyadh,Flatbed,2026-09-10,5,44,true,Contract
-K8-3-2,C035,Synthetic Carrier C035,Jubail → Riyadh,Flatbed,2026-09-10,4,80,true,Spot
-K8-3-3,C036,Synthetic Carrier C036,Jubail → Riyadh,Flatbed,2026-09-10,4,89,true,Spot
-K9-4-0,C037,Synthetic Carrier C037,Riyadh → Generic Border Hub,Dry Van,2026-09-11,5,108,true,Preferred
-K9-4-1,C038,Synthetic Carrier C038,Riyadh → Generic Border Hub,Dry Van,2026-09-11,5,101,true,Contract
-K9-4-2,C039,Synthetic Carrier C039,Riyadh → Generic Border Hub,Dry Van,2026-09-11,4,89,true,Spot
-K9-4-3,C040,Synthetic Carrier C040,Riyadh → Generic Border Hub,Dry Van,2026-09-11,4,103,true,Spot
-K10-5-0,C041,Synthetic Carrier C041,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12,5,85,true,Preferred
-K10-5-1,C042,Synthetic Carrier C042,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12,5,118,true,Contract
-K10-5-2,C043,Synthetic Carrier C043,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12,4,62,true,Spot
-K10-5-3,C044,Synthetic Carrier C044,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12,4,94,true,Spot
-K11-6-0,C045,Synthetic Carrier C045,Tabuk → NEOM Region,Lowbed,2026-09-13,5,117,true,Preferred
-K11-6-1,C046,Synthetic Carrier C046,Tabuk → NEOM Region,Lowbed,2026-09-13,5,99,true,Contract
-K11-6-2,C047,Synthetic Carrier C047,Tabuk → NEOM Region,Lowbed,2026-09-13,4,36,true,Spot
-K11-6-3,C048,Synthetic Carrier C048,Tabuk → NEOM Region,Lowbed,2026-09-13,4,58,true,Spot
+K0-0-0-0,C001,Synthetic Carrier C001,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07,3,22,true,Preferred
+K0-0-1-0,C002,Synthetic Carrier C002,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07,2,92,true,Preferred
+K0-0-2-0,C003,Synthetic Carrier C003,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07,2,112,true,Contract
+K0-0-3-0,C004,Synthetic Carrier C004,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07,2,109,true,Contract
+K0-0-4-0,C017,Synthetic Carrier C017,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-07,2,41,true,Spot
+K0-2-0-0,C001,Synthetic Carrier C001,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09,3,56,true,Preferred
+K0-2-1-0,C002,Synthetic Carrier C002,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09,2,54,true,Preferred
+K0-2-2-0,C003,Synthetic Carrier C003,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09,2,94,true,Contract
+K0-2-3-0,C004,Synthetic Carrier C004,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09,2,100,true,Contract
+K0-2-4-0,C017,Synthetic Carrier C017,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-09,2,93,true,Spot
+K0-4-0-0,C001,Synthetic Carrier C001,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11,3,74,true,Preferred
+K0-4-1-0,C002,Synthetic Carrier C002,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11,2,59,true,Preferred
+K0-4-2-0,C003,Synthetic Carrier C003,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11,2,96,true,Contract
+K0-4-3-0,C004,Synthetic Carrier C004,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11,2,78,true,Contract
+K0-4-4-0,C017,Synthetic Carrier C017,Jeddah Islamic Port → Riyadh,Flatbed,2026-09-11,2,70,true,Spot
+K1-2-0-0,C005,Synthetic Carrier C005,Jubail → Tabuk,Lowbed,2026-09-09,2,32,true,Preferred
+K1-2-1-0,C006,Synthetic Carrier C006,Jubail → Tabuk,Lowbed,2026-09-09,2,65,true,Preferred
+K1-2-2-0,C007,Synthetic Carrier C007,Jubail → Tabuk,Lowbed,2026-09-09,2,57,true,Contract
+K1-2-3-0,C008,Synthetic Carrier C008,Jubail → Tabuk,Lowbed,2026-09-09,1,117,true,Contract
+K1-2-4-0,C045,Synthetic Carrier C045,Jubail → Tabuk,Lowbed,2026-09-09,1,22,true,Spot
+K2-3-0-0,C009,Synthetic Carrier C009,Dammam → Riyadh,Reefer,2026-09-10,3,101,true,Preferred
+K2-3-1-0,C010,Synthetic Carrier C010,Dammam → Riyadh,Reefer,2026-09-10,3,109,true,Preferred
+K2-3-2-0,C011,Synthetic Carrier C011,Dammam → Riyadh,Reefer,2026-09-10,3,118,true,Contract
+K2-3-3-0,C012,Synthetic Carrier C012,Dammam → Riyadh,Reefer,2026-09-10,3,55,true,Contract
+K2-3-4-0,C025,Synthetic Carrier C025,Dammam → Riyadh,Reefer,2026-09-10,3,20,true,Spot
+K3-4-0-0,C013,Synthetic Carrier C013,Riyadh → Jeddah,Dry Van,2026-09-11,4,78,true,Preferred
+K3-4-0-1,C013,Synthetic Carrier C013,Riyadh → Jeddah,Dry Van,2026-09-11,4,60,true,Preferred
+K3-4-1-0,C014,Synthetic Carrier C014,Riyadh → Jeddah,Dry Van,2026-09-11,2,20,true,Preferred
+K3-4-2-0,C015,Synthetic Carrier C015,Riyadh → Jeddah,Dry Van,2026-09-11,2,64,true,Contract
+K3-4-3-0,C016,Synthetic Carrier C016,Riyadh → Jeddah,Dry Van,2026-09-11,2,108,true,Contract
+K3-4-4-0,C021,Synthetic Carrier C021,Riyadh → Jeddah,Dry Van,2026-09-11,2,94,true,Spot
+K4-5-0-0,C017,Synthetic Carrier C017,Jeddah → Jubail,Flatbed,2026-09-12,3,78,true,Preferred
+K4-5-1-0,C018,Synthetic Carrier C018,Jeddah → Jubail,Flatbed,2026-09-12,3,64,true,Preferred
+K4-5-2-0,C019,Synthetic Carrier C019,Jeddah → Jubail,Flatbed,2026-09-12,2,64,true,Contract
+K4-5-3-0,C020,Synthetic Carrier C020,Jeddah → Jubail,Flatbed,2026-09-12,2,42,true,Contract
+K4-5-4-0,C033,Synthetic Carrier C033,Jeddah → Jubail,Flatbed,2026-09-12,2,33,true,Spot
+K5-6-0-0,C021,Synthetic Carrier C021,Riyadh → Dammam,Dry Van,2026-09-13,4,110,true,Preferred
+K5-6-1-0,C022,Synthetic Carrier C022,Riyadh → Dammam,Dry Van,2026-09-13,4,65,true,Preferred
+K5-6-2-0,C023,Synthetic Carrier C023,Riyadh → Dammam,Dry Van,2026-09-13,4,72,true,Contract
+K5-6-3-0,C024,Synthetic Carrier C024,Riyadh → Dammam,Dry Van,2026-09-13,3,50,true,Contract
+K5-6-4-0,C037,Synthetic Carrier C037,Riyadh → Dammam,Dry Van,2026-09-13,3,47,true,Spot
+K6-1-0-0,C025,Synthetic Carrier C025,Jeddah → Dammam,Reefer,2026-09-08,4,25,true,Preferred
+K6-1-1-0,C026,Synthetic Carrier C026,Jeddah → Dammam,Reefer,2026-09-08,4,61,true,Preferred
+K6-1-2-0,C027,Synthetic Carrier C027,Jeddah → Dammam,Reefer,2026-09-08,4,68,true,Contract
+K6-1-3-0,C028,Synthetic Carrier C028,Jeddah → Dammam,Reefer,2026-09-08,3,110,true,Contract
+K6-1-4-0,C009,Synthetic Carrier C009,Jeddah → Dammam,Reefer,2026-09-08,3,57,true,Spot
+K7-2-0-0,C029,Synthetic Carrier C029,Dammam → Jubail,Tanker,2026-09-09,4,64,true,Preferred
+K7-2-1-0,C030,Synthetic Carrier C030,Dammam → Jubail,Tanker,2026-09-09,4,35,true,Preferred
+K7-2-2-0,C031,Synthetic Carrier C031,Dammam → Jubail,Tanker,2026-09-09,4,68,true,Contract
+K7-2-3-0,C032,Synthetic Carrier C032,Dammam → Jubail,Tanker,2026-09-09,3,53,true,Contract
+K7-2-4-0,C041,Synthetic Carrier C041,Dammam → Jubail,Tanker,2026-09-09,3,113,true,Spot
+K8-3-0-0,C033,Synthetic Carrier C033,Jubail → Riyadh,Flatbed,2026-09-10,4,59,true,Preferred
+K8-3-1-0,C034,Synthetic Carrier C034,Jubail → Riyadh,Flatbed,2026-09-10,4,119,true,Preferred
+K8-3-2-0,C035,Synthetic Carrier C035,Jubail → Riyadh,Flatbed,2026-09-10,4,82,true,Contract
+K8-3-3-0,C036,Synthetic Carrier C036,Jubail → Riyadh,Flatbed,2026-09-10,3,23,true,Contract
+K8-3-4-0,C001,Synthetic Carrier C001,Jubail → Riyadh,Flatbed,2026-09-10,3,104,true,Spot
+K9-4-0-0,C037,Synthetic Carrier C037,Riyadh → Generic Border Hub,Dry Van,2026-09-11,4,113,true,Preferred
+K9-4-1-0,C038,Synthetic Carrier C038,Riyadh → Generic Border Hub,Dry Van,2026-09-11,4,104,true,Preferred
+K9-4-2-0,C039,Synthetic Carrier C039,Riyadh → Generic Border Hub,Dry Van,2026-09-11,4,27,true,Contract
+K9-4-3-0,C040,Synthetic Carrier C040,Riyadh → Generic Border Hub,Dry Van,2026-09-11,3,21,true,Contract
+K9-4-4-0,C013,Synthetic Carrier C013,Riyadh → Generic Border Hub,Dry Van,2026-09-11,3,87,true,Spot
+K10-5-0-0,C041,Synthetic Carrier C041,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12,4,41,true,Preferred
+K10-5-1-0,C042,Synthetic Carrier C042,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12,4,81,true,Preferred
+K10-5-2-0,C043,Synthetic Carrier C043,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12,4,89,true,Contract
+K10-5-3-0,C044,Synthetic Carrier C044,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12,3,42,true,Contract
+K10-5-4-0,C029,Synthetic Carrier C029,Jeddah Islamic Port → Jubail,Flatbed,2026-09-12,3,68,true,Spot
+K11-6-0-0,C045,Synthetic Carrier C045,Tabuk → NEOM Region,Lowbed,2026-09-13,4,27,true,Preferred
+K11-6-1-0,C046,Synthetic Carrier C046,Tabuk → NEOM Region,Lowbed,2026-09-13,4,71,true,Preferred
+K11-6-2-0,C047,Synthetic Carrier C047,Tabuk → NEOM Region,Lowbed,2026-09-13,4,66,true,Contract
+K11-6-3-0,C048,Synthetic Carrier C048,Tabuk → NEOM Region,Lowbed,2026-09-13,3,88,true,Contract
+K11-6-4-0,C005,Synthetic Carrier C005,Tabuk → NEOM Region,Lowbed,2026-09-13,3,97,true,Spot

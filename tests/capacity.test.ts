@@ -14,10 +14,12 @@ it('excludes failed reliability and respects equality at the threshold', () => {
   expect(analyze(d, AS_OF).buckets[0].capacity.raw).toBe(10)
   expect(analyze(d, AS_OF, { MIN_RELIABILITY: .751 }).buckets[0].capacity.raw).toBe(0)
 })
-it('keeps blocks additive and implements the specified per-row concentration formula', () => {
+it('keeps blocks additive and aggregates concentration across the same carrier', () => {
   const d = fixture(); d.capacity.push(capacityRow({ capacity_id: 'second' }))
   const b = analyze(d, AS_OF).buckets[0]
-  expect(b.capacity.raw).toBe(20); expect(b.capacity.top_carrier_share).toBe(.5)
+  expect(b.capacity.raw).toBe(20); expect(b.capacity.top_carrier_share).toBe(1)
+  expect(b.capacity.carriers).toHaveLength(1)
+  expect(b.capacity.contributions.map(c => c.effective_share)).toEqual([.5, .5])
   expect(b.expected_unfulfilled).toBe(0); expect(b.projected_fulfilled).toBe(10)
 })
 it('handles no capacity, no benchmark, and no historical performance honestly', () => {

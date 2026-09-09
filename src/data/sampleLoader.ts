@@ -3,7 +3,7 @@ import { FILE_NAMES, type Datasets, type DatasetName, type SampleMetadata } from
 import { timestamp, DAY, addDays, dateNumber, localDate, DEFAULT_TIME_ZONE } from '../utils/dates'
 import { validateCsv, type CsvFiles } from './validation'
 export function serializeDatasets(data: Datasets): CsvFiles {
-  return Object.fromEntries((Object.keys(FILE_NAMES) as DatasetName[]).filter(k => data[k] !== undefined).map(k => [k, Papa.unparse<object>(data[k]!)]))
+  return Object.fromEntries((Object.keys(FILE_NAMES) as DatasetName[]).filter(k => data[k] !== undefined).map(k => [k, Papa.unparse<object>(data[k]!, { newline: '\n' })]))
 }
 export function shiftSampleDates(data: Datasets, metadata: SampleMetadata, asOf: string, timeZone = DEFAULT_TIME_ZONE): Datasets {
   const delta = timestamp(asOf, timeZone) - timestamp(metadata.sample_as_of, timeZone)

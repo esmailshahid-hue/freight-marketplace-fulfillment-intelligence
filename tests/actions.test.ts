@@ -31,9 +31,9 @@ it('payment is only an exposure overlay, uses at least 15% and never changes cap
   expect(paid.actions.map(a => a.action_type)).toContain('REVIEW_PAYMENT_EXPOSURE')
   d.payments[0].overdue_payable = 0
   expect(analyze(d, AS_OF).actions.map(a => a.action_type)).not.toContain('REVIEW_PAYMENT_EXPOSURE')
-  const bucket = structuredClone(paid.buckets[0]); bucket.capacity.contributions[0].effective_share = .15
+  const bucket = structuredClone(paid.buckets[0]); bucket.capacity.carriers[0].effective_share = .15
   expect(generateActions([bucket], [{ ...d.payments[0], overdue_payable: 1 }]).map(a => a.action_type)).toContain('REVIEW_PAYMENT_EXPOSURE')
-  bucket.capacity.contributions[0].effective_share = .14999
+  bucket.capacity.carriers[0].effective_share = .14999
   expect(generateActions([bucket], [{ ...d.payments[0], overdue_payable: 1 }]).map(a => a.action_type)).not.toContain('REVIEW_PAYMENT_EXPOSURE')
 })
 it('prebooks once per pair at exact growth and demand boundaries', () => {

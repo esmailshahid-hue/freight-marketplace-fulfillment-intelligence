@@ -10,7 +10,7 @@ export function calculateRisk(coverage: number, hours: number, acceptance: numbe
     { score: .45 * components.capacity, text: `effective capacity covers ${(coverage * 100).toFixed(1)}% of demand` },
     { score: .20 * components.urgency, text: `pickup is in ${hours.toFixed(1)} hours` },
     { score: .20 * components.rate, text: `modeled acceptance is ${(acceptance * 100).toFixed(1)}%` },
-    { score: .15 * components.concentration, text: `largest capacity block represents ${(topShare * 100).toFixed(1)}% of effective capacity` },
+    { score: .15 * components.concentration, text: `largest carrier represents ${(topShare * 100).toFixed(1)}% of effective capacity` },
   ].sort((a, b) => b.score - a.score)
   return { score, band, components, reason: `${band} risk: ${factors.slice(0, 3).map(f => f.text).join('; ')}.${pricingAvailable ? '' : ' Limited pricing history; rate benchmark unavailable.'}` }
 }

@@ -84,6 +84,8 @@ Payment exposure never changes acceptance, reliability or capacity. It can only 
 
 ## Synthetic operating scenarios
 
+The committed sample uses lane-specific SAR rate baselines, seeded within-lane price variation and carrier profiles. Twelve of 48 carriers serve multiple lanes, with matching execution and offer histories. Historical outcomes are stratified at carrier level and shuffled with seed 42 to avoid accidental all-good/all-bad thin samples; dates vary within the weekly demand envelope. Upcoming buckets contain commercially distinct batches. These are controlled synthetic operating patterns, not observed market quotes.
+
 The committed sample contains 1,200 historical loads, 3,840 offers spanning the prior 90 days, 155 upcoming load-equivalents, 48 carriers, 12 lanes, five equipment types, seven customers and four business units. Geography and identities are illustrative; no company's operational data is used.
 
 | Specification scenario | Expected detection and response |
@@ -91,7 +93,7 @@ The committed sample contains 1,200 historical loads, 3,840 offers spanning the 
 | A — Port demand spike + pricing pressure | Exactly 35% weekly growth; qualified raw coverage ≥1, effective coverage <1; `PRICE_COMPETITIVENESS`, `RAISE_BUY_RATE`, separate `PREBOOK_CAPACITY` |
 | B — Specialized physical shortage | Raw coverage <0.75, strong acceptance and reliable carriers; `SUPPLY_SHORTAGE`, `SECURE_CAPACITY`; first supply-gap rank |
 | C — Commercial constraint | Restoring rates exist but all breach the floor; `COMMERCIAL_CONSTRAINT`, escalation, no rate-raise action |
-| D — Concentration | 50% largest contribution, otherwise healthy; backup-carrier action and separate Watch warning |
+| D — Concentration | Approximately 50% largest carrier contribution, spread across two additive blocks, otherwise healthy; backup-carrier action and separate Watch warning |
 | E — Service-quality drag | Acceptance-adjusted coverage ≥1 but effective coverage <1; `SERVICE_QUALITY`, review reliable alternatives |
 | F — Healthy controls | Seven groups, 84/155 loads (54.2%); effective coverage ≥1.20, no severe concentration, low/medium risk, no generated actions |
 
@@ -101,14 +103,14 @@ The task's A/B split port demand and pricing, C denotes physical shortage, and E
 
 ## Explicit interpretation choices and limitations
 
-No specified formula or threshold was changed. The following unspecified or conflicting cases have explicit behavior:
+The carrier-level concentration correction below supersedes the original row-level interpretation of §15, as requested. No other formula or threshold was changed. The following unspecified or conflicting cases have explicit behavior:
 
 1. **No usable history:** a wholly absent pickup/delivery denominator remains unavailable rather than being assigned a fabricated percentage. A row with unavailable reliability cannot qualify. If service is known but no historical offers exist, raw qualified capacity remains measurable; modeled acceptance is null, effective contribution is unquantifiable and omitted from the numeric sum, `estimate_available` is false, and a warning is returned. Numeric exposure in that case is conservative, not a fully estimated forecast. Known zero acceptance is distinct and uses the specified 0.10 clamp.
 2. **Fallback windows:** carrier service and carrier/marketplace acceptance use all nonfuture supplied history; no additional lookback was specified for them. Pricing uses the configured windows. Date-only lookbacks include both calendar endpoints and exclude dates later than the local analysis date.
 3. **Calendar convention:** complete weeks are Monday–Sunday. The first partially observed lane/equipment week is excluded; up to eight complete weeks are counted, including zero-demand weeks. Two complete weeks are required. The planning timezone defaults explicitly to `Asia/Riyadh` and is configurable; offset-less ISO datetimes use that timezone, not the machine timezone. Ambiguous local times at DST transitions should be supplied with an explicit offset.
 4. **Date-only sample shifts:** pickup instants shift by exactly the analysis-time delta. History/payment calendar dates shift by the local calendar-day delta; capacity dates follow shifted pickup dates so an evening pickup crossing midnight retains its supply. Date-only fields cannot represent a sub-day delta. Complete-week baselines can vary slightly after shifting to another weekday. Uploaded dates never shift.
 5. **Commercial precedence:** a commercial constraint requires at least one genuinely restoring higher-rate candidate, and all restoring candidates must breach the floor. Otherwise an empty set would incorrectly satisfy “every rate.” If a partial valid recommendation coexists with a commercial primary cause, the explicit scenario-C prohibition suppresses `RAISE_BUY_RATE`; escalation wins.
-6. **Concentration:** §15 explicitly calculates the maximum *capacity-row* share. That literal formula is retained, even when one carrier has multiple additive blocks. It can understate carrier-level concentration across split blocks. Payment contribution is summed by carrier. Pair-level supply-gap concentration uses the maximum upcoming bucket share because no pair aggregation rule is specified. These limitations are documented rather than silently changing the formulas.
+6. **Concentration:** sum effective contributions from all qualified blocks by carrier within each planning bucket, then divide each carrier total by bucket effective capacity. `capacity.carriers` exposes totals, shares and contributing capacity IDs; `capacity.contributions` retains individual rows. All risk, root-cause, concentration, backup-carrier and supply-gap calculations use that carrier-level top share. Payment exposure uses the same totals. Pair-level supply-gap concentration continues to use the maximum upcoming bucket share.
 7. **Watch vs action severity:** an otherwise healthy concentrated bucket has a separate Watch warning. Its action severity still comes from the exact §21 priority formula. Fulfillment root causes are assigned only to buckets below 1.0 effective coverage; healthy contributors are retained as secondary context.
 8. **Pair actions:** prebooking is emitted once per lane/equipment pair, anchored to its earliest upcoming bucket; its evidence includes the seven-day demand and baseline. Bucket exposure and urgency feed priority. Other action IDs are stable by type/bucket/carrier, enabling scenario action deltas.
 9. **Empty demand:** zero-demand buckets are omitted. Empty-portfolio ratios are null, not artificial 0% or 100% fulfillment. Scenario demand/capacity remain decimal load-equivalents and clamp to nonnegative values. Scenario inputs are analytical API values; later UI controls must enforce the specification's user-control ranges.

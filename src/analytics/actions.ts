@@ -37,7 +37,7 @@ export function generateActions(buckets: PlanningBucket[], payments?: CarrierPay
     if (b.root_cause.primary === 'SERVICE_QUALITY') add('REVIEW_SERVICE_QUALITY', 'Shift planned volume toward more reliable qualified carriers or secure backup capacity. Physical supply is adequate before service reliability is applied, but reliability-adjusted capacity falls below demand.')
     if (b.effective_capacity_coverage < 1) {
       for (const p of payments ?? []) {
-        const share = b.capacity.contributions.filter(r => r.carrier_id === p.carrier_id).reduce((n, r) => n + r.effective_share, 0)
+        const share = b.capacity.carriers.find(c => c.carrier_id === p.carrier_id)?.effective_share ?? 0
         if (p.payment_status === 'Overdue' && p.overdue_payable > 0 && share >= .15) add('REVIEW_PAYMENT_EXPOSURE', `Review payment exposure for Carrier ${p.carrier_id}. It contributes ${pct(share)} of modeled effective capacity on an at-risk lane and currently has ${p.currency} ${p.overdue_payable} overdue. This is an operational relationship flag only; v1 does not assume payment status causes capacity loss.`, [`Carrier share ${pct(share)}`, `Overdue payable ${p.overdue_payable}`], p.carrier_id)
       }
     }
