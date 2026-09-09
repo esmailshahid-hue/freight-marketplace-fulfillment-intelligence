@@ -1,7 +1,7 @@
 import { isBriefContext, isOperationsBrief, type BriefContext, type OperationsBrief } from '../src/brief/context.js'
 
 export interface BriefEnvironment { ANALYSIS_LLM_API_KEY?: string; ANALYSIS_LLM_MODEL?: string; ANALYSIS_LLM_BASE_URL?: string }
-type BriefFailureCategory = 'provider_http_error' | 'provider_timeout' | 'provider_network_error' | 'invalid_provider_response' | 'invalid_provider_json' | 'brief_validation_failed' | 'unexpected_server_error'
+type BriefFailureCategory = 'provider_http_error' | 'provider_timeout' | 'provider_network_error' | 'invalid_provider_response' | 'invalid_provider_envelope_json' | 'empty_provider_content' | 'invalid_brief_json' | 'brief_validation_failed' | 'unexpected_server_error'
 class BriefGenerationError extends Error {
   readonly category: BriefFailureCategory
   readonly status?: number
@@ -19,7 +19,15 @@ Return a JSON object with exactly four string keys in this order:
 "What requires attention", "Why", "Commercial impact", "Recommended actions".
 Each value is a concise plain-text paragraph, no markdown, HTML, bullets, newlines or extra headings.
 The complete brief including headings must be UNDER 250 words. Aim for 150–200 words.
-If data is unavailable or no actions exist, say so. Do not invent an issue or fill gaps.`
+If data is unavailable or no actions exist, say so. Do not invent an issue or fill gaps.
+Output only the JSON object with these exact four keys and string values.
+This example shows structure only; do not copy its placeholder text into the real brief:
+{
+  "What requires attention": "Plain-text paragraph.",
+  "Why": "Plain-text paragraph.",
+  "Commercial impact": "Plain-text paragraph.",
+  "Recommended actions": "Plain-text paragraph."
+}`
 function providerConfiguration(env: BriefEnvironment) {
   if (!env.ANALYSIS_LLM_API_KEY?.trim() || !env.ANALYSIS_LLM_MODEL?.trim() || !env.ANALYSIS_LLM_BASE_URL?.trim()) return null
   try {
@@ -38,20 +46,31 @@ function logBriefFailure(error: unknown, config: NonNullable<ReturnType<typeof p
 }
 // Replace this adapter to support another protocol. Provider credentials never enter src/.
 export async function narrate(context: BriefContext, config: NonNullable<ReturnType<typeof providerConfiguration>>, fetcher: typeof fetch = fetch): Promise<OperationsBrief> {
+  // Both attempts share the existing time budget, within the function's runtime limit.
+  const signal = AbortSignal.timeout(20_000)
+  try { return await narrateAttempt(context, config, fetcher, signal) } catch (error) {
+    if (!(error instanceof BriefGenerationError) || !['empty_provider_content', 'invalid_brief_json'].includes(error.category)) throw error
+    return narrateAttempt(context, config, fetcher, signal)
+  }
+}
+async function narrateAttempt(context: BriefContext, config: NonNullable<ReturnType<typeof providerConfiguration>>, fetcher: typeof fetch, signal: AbortSignal): Promise<OperationsBrief> {
   let response: Response
   try {
     response = await fetcher(config.url, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.key}` }, redirect: 'error', signal: AbortSignal.timeout(20_000),
-      body: JSON.stringify({ model: config.model, messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: JSON.stringify(context) }], response_format: { type: 'json_object' }, max_tokens: 1000 }),
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.key}` }, redirect: 'error', signal,
+      body: JSON.stringify({ model: config.model, messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: JSON.stringify(context) }], response_format: { type: 'json_object' }, thinking: { type: 'disabled' }, max_tokens: 1000 }),
     })
   } catch (error) { throw new BriefGenerationError(isTimeout(error) ? 'provider_timeout' : 'provider_network_error') }
   if (!response.ok) throw new BriefGenerationError('provider_http_error', response.status)
   let result: { choices?: { message?: { content?: unknown } }[] }
-  try { result = await response.json() as typeof result } catch { throw new BriefGenerationError('invalid_provider_json') }
+  try { result = await response.json() as typeof result } catch (error) {
+    throw new BriefGenerationError(isTimeout(error) ? 'provider_timeout' : 'invalid_provider_envelope_json')
+  }
   const content: unknown = result?.choices?.[0]?.message?.content
   if (typeof content !== 'string' || content.length > 10_000) throw new BriefGenerationError('invalid_provider_response')
+  if (!content.trim()) throw new BriefGenerationError('empty_provider_content')
   let brief: unknown
-  try { brief = JSON.parse(content) } catch { throw new BriefGenerationError('invalid_provider_json') }
+  try { brief = JSON.parse(content) } catch { throw new BriefGenerationError('invalid_brief_json') }
   if (!isOperationsBrief(brief, context)) throw new BriefGenerationError('brief_validation_failed')
   return brief
 }
