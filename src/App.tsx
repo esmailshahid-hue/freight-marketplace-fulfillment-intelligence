@@ -12,7 +12,7 @@ import { SupplyGaps } from './pages/SupplyGaps'
 import { ScenarioLab } from './pages/ScenarioLab'
 import { initialUploadState, uploadReducer, type Snapshot } from './ui/uploadState'
 import { UploadWorkflow } from './components/UploadWorkflow'
-import { ValidationResults } from './components/ValidationResults'
+import { DataStatus } from './components/DataStatus'
 import './App.css'
 type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; snapshot: Snapshot }
 const TABS = ['Operations Queue', 'Capacity & Fulfillment', 'Pricing & Economics', 'Supply Gaps', 'Scenario Lab'] as const
@@ -21,7 +21,6 @@ function Workspace({ snapshot, source }: { snapshot: Snapshot; source: 'sample' 
   const [selection, setSelection] = useState<BucketSelection | null>(null)
   const [scenarioVisited, setScenarioVisited] = useState(false)
   const { analysis, data, asOf, validation } = snapshot
-  const { warnings } = validation
   const currency = data.upcoming[0]?.currency ?? validation.pastDue[0]?.currency ?? data.historical[0]?.currency ?? data.offers[0]?.currency ?? data.payments?.[0]?.currency ?? 'SAR'
   const openBucket = (bucket: PlanningBucket) => setSelection({ bucket, actions: analysis.actions, context: 'Baseline' })
   const openAction = (action: Action) => {
@@ -33,11 +32,7 @@ function Workspace({ snapshot, source }: { snapshot: Snapshot; source: 'sample' 
     <div className="data-context"><p><strong>{source === 'sample' ? 'Sample data' : 'Uploaded data'}</strong> · 7-day view · {currency}</p>
       <p>Analysis time: <time dateTime={asOf}>{new Intl.DateTimeFormat('en-GB', { timeZone: DEFAULT_TIME_ZONE, dateStyle: 'medium', timeStyle: 'short' }).format(new Date(asOf))}</time> · {DEFAULT_TIME_ZONE}</p>
     </div>
-    <details className={`data-status ${validation.pastDue.length ? 'needs-attention' : ''}`}><summary>Data status: {source === 'sample' ? 'sample loaded' : 'uploaded data loaded'} · {warnings.length} {warnings.length === 1 ? 'warning' : 'warnings'}{validation.pastDue.length > 0 && ` · ${validation.pastDue.length} past-due rows excluded`}</summary>
-      <p>{data.upcoming.length} upcoming rows · {data.historical.length} historical loads · {data.offers.length} offers · {data.capacity.length} capacity blocks · {data.payments?.length ?? 0} carrier payment rows. {source === 'sample' ? 'Dates shifted to this analysis snapshot.' : 'Uploaded dates have not been shifted.'}</p>
-      {!data.payments && <p>Carrier payments not provided. Payment exposure actions are unavailable.</p>}
-      <ValidationResults result={validation} />
-    </details>
+    <DataStatus data={data} validation={validation} source={source} />
     <div className="tabs" role="tablist" aria-label="Operations views">{TABS.map((name, i) => <button key={name} role="tab" id={`tab-${i}`} aria-controls={`panel-${i}`} aria-selected={tab === name} tabIndex={tab === name ? 0 : -1}
       onClick={() => activateTab(name)} onKeyDown={e => {
         const next = e.key === 'ArrowRight' ? (i + 1) % TABS.length : e.key === 'ArrowLeft' ? (i + TABS.length - 1) % TABS.length : e.key === 'Home' ? 0 : e.key === 'End' ? TABS.length - 1 : null

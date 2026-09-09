@@ -58,3 +58,25 @@ it('shows scenario deterioration as signed display deltas and preserves unavaila
   const html = renderToStaticMarkup(createElement(ScenarioComparison, { baseline, scenario: { ...baseline, expected_unfulfilled: baseline.expected_unfulfilled + 4 }, currency: 'SAR' }))
   expect(html).toContain('metric-delta negative'); expect(html).toContain('+4.0 loads')
 })
+it('uses the commercial trade-off label across action displays while preserving recommendations and enums', async () => {
+  const { generateSynthetic } = await import('../src/data/synthetic')
+  const { NeedsAttention } = await import('../src/components/NeedsAttention')
+  const { ActionTable } = await import('../src/components/ActionTable')
+  const { bucketForAction } = await import('../src/ui/selectors')
+  const { label } = await import('../src/ui/format')
+  const analysis = analyze(generateSynthetic(), AS_OF), before = structuredClone(analysis)
+  const action = analysis.actions.find(a => a.action_type === 'ESCALATE_COMMERCIAL_CONSTRAINT')!
+  expect(label(action.action_type)).toBe('Review commercial trade-off')
+  const views = [
+    createElement(OperationsQueue, { analysis, asOf: AS_OF, currency: 'SAR', onAction: () => {}, onBucket: () => {} }),
+    createElement(NeedsAttention, { analysis, onAction: () => {} }),
+    createElement(ActionTable, { actions: [action], currency: 'SAR', onSelect: () => {}, caption: 'Scenario actions' }),
+    createElement(BucketDrawer, { selection: { bucket: bucketForAction(action, analysis.buckets)!, actions: analysis.actions, context: 'Baseline' }, onClose: () => {} }),
+  ]
+  for (const view of views) {
+    const html = renderToStaticMarkup(view)
+    expect(html).toContain('Review commercial trade-off')
+    expect(html).not.toContain('Escalate commercial constraint')
+  }
+  expect(analysis).toEqual(before)
+})
