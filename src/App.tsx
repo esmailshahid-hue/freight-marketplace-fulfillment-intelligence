@@ -86,6 +86,14 @@ export default function App() {
     <header className="app-header">
       <h1>Freight Fulfillment Intelligence</h1>
       <p>Find fulfillment gaps. Review capacity, pricing and carrier actions.</p>
+      <section className="how-it-works" aria-labelledby="how-it-works-title">
+        <h2 id="how-it-works-title">How it works</h2>
+        <ol>
+          <li><strong>Review</strong><p>Start with Operations Queue to see which lanes need attention.</p></li>
+          <li><strong>Investigate</strong><p>Open a flagged lane to understand the cause, capacity gap, pricing, and recommended actions.</p></li>
+          <li><strong>Test</strong><p>Use Pricing, Supply Gaps, or Scenario Lab to explore the response.</p></li>
+        </ol>
+      </section>
     <div className="source-controls"><div className="mode-selector" role="group" aria-label="Data source">
       <>
         <button aria-pressed={uploads.mode === 'sample'} onClick={reset}>Sample data</button>

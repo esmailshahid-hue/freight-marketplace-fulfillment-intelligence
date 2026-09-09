@@ -2,6 +2,13 @@
 .app-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 .app-header h1 { grid-column: 1; }
 .app-header > p { grid-column: 1; font-size: 12px; color: var(--muted); margin: 0; max-width: 850px; }
+.how-it-works { grid-column: 1 / -1; margin-top: 13px; padding-top: 11px; border-top: 1px solid #e5eaef; }
+.how-it-works h2 { margin-bottom: 7px; color: var(--muted); font-size: 11px; line-height: 1.4; text-transform: uppercase; letter-spacing: .6px; }
+.how-it-works ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 24px; margin: 0; padding: 0; list-style: none; counter-reset: guide-step; }
+.how-it-works li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 7px; min-width: 0; counter-increment: guide-step; }
+.how-it-works li::before { content: counter(guide-step) '.'; color: var(--accent); font-size: 11px; font-weight: 650; }
+.how-it-works strong { font-size: 11px; font-weight: 650; }
+.how-it-works li p { grid-column: 2; margin: 1px 0 0; max-width: 420px; color: var(--muted); font-size: 11px; line-height: 1.4; }
 .source-controls { grid-column: 2; grid-row: 1 / 3; display: flex; flex-wrap: wrap; gap: 6px; align-content: center; align-items: center; justify-content: flex-end; max-width: 400px; }
 .source-controls button { font-size: 12px; padding: 7px 10px; }
 .source-controls button[aria-pressed='true'] { background: #e8f1f2; color: #174e5a; border-color: #86a9b0; }
@@ -155,11 +162,12 @@ footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border
 .skip-link { position: absolute; left: 20px; top: -100px; background: white; padding: 10px; z-index: 10; color: #195363; }
 .skip-link:focus { top: 10px; }
 @media (max-width: 1200px) {
-  .app-shell { padding: 20px; } .app-header { grid-template-columns: minmax(0, 1fr); } .source-controls { grid-column: 1; grid-row: 3; justify-content: flex-start; max-width: none; margin-top: 12px; }
+  .app-shell { padding: 20px; } .app-header { grid-template-columns: minmax(0, 1fr); } .source-controls { grid-column: 1; grid-row: 4; justify-content: flex-start; max-width: none; margin-top: 12px; }
   .kpi { padding: 14px; } .kpi dd { font-size: 24px; } .kpi:nth-child(4) dd { font-size: 18px; }
 }
 @media (max-width: 800px) {
   .app-shell { padding: 16px; } .two-columns, .scenario-layout { grid-template-columns: minmax(0, 1fr); }
+  .how-it-works ol { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpi { border-bottom: 1px solid var(--border); } .kpi:first-child { grid-column: 1 / -1; }
   .kpi dt { min-height: 0; } .kpi dd { font-size: 24px; } .kpi:nth-child(4) dd { font-size: 21px; }
   .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
