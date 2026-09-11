@@ -85,7 +85,9 @@ export default function App() {
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="app-header">
       <h1>Freight Fulfillment Intelligence</h1>
-      <p>Find fulfillment gaps. Review capacity, pricing and carrier actions.</p>
+      <p>See which upcoming loads are at risk, why, and what Operations should do next.
+        <span className="project-context">Independent portfolio project · <a href="https://esmailarshad.com/work/freight-fulfillment-intelligence/" target="_blank" rel="noopener noreferrer">Project overview ↗</a></span>
+      </p>
       <section className="how-it-works" aria-labelledby="how-it-works-title">
         <h2 id="how-it-works-title">How it works</h2>
         <ol>

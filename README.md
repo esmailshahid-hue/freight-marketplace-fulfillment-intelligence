@@ -26,6 +26,24 @@ Analytics are pure TypeScript functions in `src/analytics/`. Qualified physical 
 
 The [product specification](docs/freight_marketplace_fulfillment_capacity_v1_spec.md) contains the formulas, data contracts and default thresholds. No AI participates in calculations, classification, prioritization or scenarios.
 
+## Architecture & AI boundaries
+
+```mermaid
+flowchart TD
+  data["Sample data / uploaded CSVs"] --> validation["Browser-side mapping and validation"]
+  validation --> engine["Deterministic TypeScript analytics"]
+  engine --> results["Fulfillment risk / root cause / prioritized actions"]
+  results --> views["Operations Queue and supporting views"]
+  views --> scenarios["Scenario Lab"]
+  scenarios -->|Changed assumptions, same engine| engine
+  results -.->|Optional: Generate Operations Brief| summary["Already-calculated structured summary"]
+  summary --> api["/api/operations-brief"]
+  api --> provider["Configured AI provider"]
+  provider --> brief["Validated Operations Brief"]
+```
+
+**Why AI is limited here:** fulfillment risk, root causes and recommended actions need to remain repeatable and inspectable. Deterministic code calculates fulfillment, classifies risk, selects root causes, prioritizes actions and runs scenarios. AI only summarizes those already-calculated structured results into a short Operations Brief. The validation and privacy checks on that optional path are described in [Data privacy](#data-privacy).
+
 ## Core decisions
 
 | Operating problem | Response |
@@ -80,6 +98,23 @@ The brief has exactly four sections and fewer than 250 words. Format and numeric
 The sample is entirely synthetic and does not represent any company's network or operations. Seed 42 reproduces 1,200 historical loads, 3,840 offers, 155 upcoming load-equivalents, 48 carriers, 12 lanes, five equipment types, seven customers and four business units. Twelve carriers operate across multiple lanes.
 
 Planted scenarios cover port demand growth and pricing pressure, specialized physical shortage, commercial constraint, carrier concentration, service-quality drag and healthy controls. Healthy controls account for 54.2% of upcoming demand. Dates shift relative to the current sample analysis time; user data never shifts.
+
+## Validation
+
+Existing tests check deterministic calculations and invariants, pricing and commercial-floor rules, capacity and reliability adjustments, carrier concentration, action generation, scenario changes and presentation of engine results. The [planted-scenario tests](tests/planted-scenarios.test.ts) verify these synthetic cases:
+
+| Scenario | What the engine should recognize | Expected response |
+| --- | --- | --- |
+| Port demand spike and pricing pressure | Raw capacity covers demand, but low acceptance reduces effective coverage. | Pricing competitiveness; Raise buy rate and Pre-book capacity. |
+| Specialized physical supply shortage | Raw capacity is insufficient despite strong acceptance and reliability. | Supply shortage; Secure capacity. |
+| Commercial constraint | Modeled rates that restore coverage breach the commercial floor. | Review commercial trade-off; no Raise buy rate action. |
+| Carrier concentration | Healthy coverage still depends heavily on one carrier. | Watch warning; Activate backup carriers. |
+| Service-quality drag | Reliability reduces effective coverage despite sufficient raw and acceptance-adjusted capacity. | Service quality; Review service quality. |
+| Healthy controls | Healthy capacity, pricing and service conditions. | No actions generated. |
+
+Run `npm run verify:scenarios` to check the planted scenarios and print their calculated results. These are synthetic checks, not production validation or accuracy metrics.
+
+[Operations Brief tests](tests/brief.test.ts) verify that raw source datasets stay out of AI requests; summary fields are allowlisted and bounded; malformed output, unsupported sections and invented numerical tokens are rejected; and provider failures leave deterministic analysis unchanged. They do not establish the factual accuracy of generated prose.
 
 ## Running locally
 

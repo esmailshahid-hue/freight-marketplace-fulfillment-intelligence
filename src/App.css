@@ -2,6 +2,8 @@
 .app-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 .app-header h1 { grid-column: 1; }
 .app-header > p { grid-column: 1; font-size: 12px; color: var(--muted); margin: 0; max-width: 850px; }
+.project-context { display: block; margin-top: 4px; font-size: 11px; }
+.project-context a { color: inherit; text-underline-offset: 3px; }
 .how-it-works { grid-column: 1 / -1; margin-top: 13px; padding-top: 11px; border-top: 1px solid #e5eaef; }
 .how-it-works h2 { margin-bottom: 7px; color: var(--muted); font-size: 11px; line-height: 1.4; text-transform: uppercase; letter-spacing: .6px; }
 .how-it-works ol { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.15fr) minmax(0, 1.05fr); gap: 12px 24px; margin: 0; padding: 0; list-style: none; counter-reset: guide-step; }
