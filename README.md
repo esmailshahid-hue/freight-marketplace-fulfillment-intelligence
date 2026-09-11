@@ -4,7 +4,7 @@ A freight marketplace can have enough physical trucks and still struggle to fulf
 
 **Live demo:** [https://freight.esmailarshad.com](https://freight.esmailarshad.com)
 
-This portfolio MVP answers: **Where is fulfillment at risk, why, and what should Operations do?**
+**The core question: Where is fulfillment at risk, why, and what should Operations do?**
 
 ## What it does
 
@@ -36,13 +36,13 @@ flowchart TD
   results --> views["Operations Queue and supporting views"]
   views --> scenarios["Scenario Lab"]
   scenarios -->|Changed assumptions, same engine| engine
-  results -.->|Optional: Generate Operations Brief| summary["Already-calculated structured summary"]
+  results -.->|Optional: Generate Operations Brief| summary["Calculated results"]
   summary --> api["/api/operations-brief"]
-  api --> provider["Configured AI provider"]
+  api --> provider["AI provider"]
   provider --> brief["Validated Operations Brief"]
 ```
 
-**Why AI is limited here:** fulfillment risk, root causes and recommended actions need to remain repeatable and inspectable. Deterministic code calculates fulfillment, classifies risk, selects root causes, prioritizes actions and runs scenarios. AI only summarizes those already-calculated structured results into a short Operations Brief. The validation and privacy checks on that optional path are described in [Data privacy](#data-privacy).
+**Where AI fits:** Fulfillment risk, root causes and recommended actions need to remain repeatable and inspectable. Deterministic code handles the calculations, risk classification, root causes, action priorities and scenarios. AI is only used to turn those calculated results into a short Operations Brief.
 
 ## Core decisions
 
@@ -101,7 +101,7 @@ Planted scenarios cover port demand growth and pricing pressure, specialized phy
 
 ## Validation
 
-Existing tests check deterministic calculations and invariants, pricing and commercial-floor rules, capacity and reliability adjustments, carrier concentration, action generation, scenario changes and presentation of engine results. The [planted-scenario tests](tests/planted-scenarios.test.ts) verify these synthetic cases:
+Tests cover the core calculations, pricing and capacity logic, carrier concentration, recommended actions, scenario changes and presentation of results. The [planted-scenario tests](tests/planted-scenarios.test.ts) verify these synthetic cases:
 
 | Scenario | What the engine should recognize | Expected response |
 | --- | --- | --- |
@@ -114,7 +114,7 @@ Existing tests check deterministic calculations and invariants, pricing and comm
 
 Run `npm run verify:scenarios` to check the planted scenarios and print their calculated results. These are synthetic checks, not production validation or accuracy metrics.
 
-[Operations Brief tests](tests/brief.test.ts) verify that raw source datasets stay out of AI requests; summary fields are allowlisted and bounded; malformed output, unsupported sections and invented numerical tokens are rejected; and provider failures leave deterministic analysis unchanged. They do not establish the factual accuracy of generated prose.
+[Operations Brief tests](tests/brief.test.ts) verify that raw source datasets stay out of AI requests; summary fields are allowlisted and bounded; malformed output, unsupported sections and invented numerical tokens are rejected; and provider failures leave deterministic analysis unchanged. The brief should still be reviewed alongside the underlying calculated results.
 
 ## Running locally
 
